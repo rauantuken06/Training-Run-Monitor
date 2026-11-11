@@ -74,8 +74,12 @@ PW_CHANNEL=chrome npm run test:e2e    # or PW_CHANNEL=msedge
 │   │   │   ├── repository/      RunRepository: lazy, cached access to runs
 │   │   │   └── serialization/   JSON codec that keeps NaN / ±Infinity / null distinct
 │   │   └── runs/
-│   │       └── pages/           Runs list and run details pages
-│   ├── test/                    Test setup, render and dataset test helpers
+│   │       ├── components/      Table, filters, status badge, metric cards, data quality, chart placeholders
+│   │       ├── data/            RunDataContext (repository + memoized analysis)
+│   │       ├── hooks/           useRunAnalysis (stale-safe loading), useDocumentTitle
+│   │       ├── pages/           Runs list and run details pages
+│   │       └── format.ts, labels.ts, runListQuery.ts   Formatting, labels, list search/filter/sort
+│   ├── test/                    Test setup, render helpers, controlled repository, references
 │   ├── types/
 │   │   └── training.ts          Domain types (points, runs, summaries, diagnostics)
 │   ├── index.css                Tailwind entry and base styles
@@ -90,7 +94,6 @@ PW_CHANNEL=chrome npm run test:e2e    # or PW_CHANNEL=msedge
 Later tasks will add these folders. They are not created yet, to avoid empty placeholders:
 
 ```
-src/features/runs/components/       list table, filters, sort controls
 src/features/charts/components/     ECharts wrappers
 src/hooks/  src/utils/
 ```
@@ -334,6 +337,50 @@ The spike was kept in every measured result. **Memory:** the heap retained by on
 - Behaviour beyond the tested inputs: the randomized cases go up to 400 records, and the only large input is the synthetic million-point run.
 - Browser performance, memory and main-thread impact (Task 08).
 
+## Dashboard (Task 05)
+
+### Pages
+
+- **Runs list (`/`)**: one table row per run: name (a link) and ID, status as text, type (behaviour scenarios), declared anomalies, point count and creation date. Above it: search (name or ID), status filter, data-quality filter (all / no declared anomalies / any / a specific anomaly), sort (ID, name, status, point count) and order, plus Clear filters. A polite live region announces "Showing N of 20 runs". The whole query is kept in the URL (`?q=…&status=…&quality=…&sort=…&dir=…`), so reloads, Back, and the details page's "← All runs" link all restore it.
+- **Run details (`/runs/:runId`)**: name, status, ID, description, total observations, creation date, declared scenarios and configuration appear immediately, from metadata. Then:
+  - three metric cards (loss, lr, grad_norm)
+  - the data quality report
+  - three labelled chart placeholders, with stable heights and no drawn content
+- An unknown ID shows "Run not found" without requesting any data.
+
+### Where the numbers come from
+
+- The list uses **metadata only** (`listRuns()`); no run's points are loaded or analyzed. Its data-quality column is the anomaly set **declared** in the run metadata and is labelled as such. Detected issues are computed only when a run is opened. The list shows no metric values because computing them would mean loading all 20 runs, including the million-point one.
+- The details page loads exactly one run with `repository.getRun(id)` and runs the Task 03 `analyzeRun` once. The cards and the report show `MetricSummary` and `DataQualityDiagnostics` directly; the UI computes no statistics of its own.
+- Values are shown at 5 significant digits (scientific notation below 1e-3 or from 1e5). The exact raw value is kept in each `<data value>` attribute and tooltip. `NaN`, `+Infinity`, `-Infinity` and `Not recorded` are spelled out in red, never shown as 0. When a metric's last recorded value is invalid, its card shows a warning, and the report shows an error naming the trailing invalid stretch.
+- The data quality report groups issues into categories (invalid values, missing measurements, missing steps, duplicates, out-of-order records, plus invalid/off-grid steps when present). Each category has a count, a severity written as text, and a breakdown, for example "50 conflicting · 1 identical". Details sit behind a native `<details>` element and list at most 10 entries, with "N more not shown". Conflicting duplicates come first and show every raw record's value, which one is displayed, and which are hidden.
+
+### Loading and asynchronous behaviour
+
+- `useRunAnalysis(runId)` returns `loading`, `ready`, `not_found` or `error`, with a retry. Stale responses are ignored in two ways: each request has an `active` flag that its cleanup turns off, and a state belonging to a different run ID is never returned, not even for a single render. The details page also remounts per run (`key`). Hook-level tests check both guards without a remount; removing either one fails a test.
+- Analysis runs once per load, inside the effect rather than during render, and is memoized per run object (`WeakMap`). The repository returns the same immutable run object again, so re-opening a run reuses its analysis, and a cache entry can't belong to other data.
+- **The Promise does not prevent blocking.** `getRun` returns a Promise, but generation and analysis are synchronous main-thread work. The hook waits for a `requestAnimationFrame` and then a timer before starting, so the loading state is painted first. After that, the page is unresponsive while the work runs. Measured in Chrome via Playwright on this machine by recording animation frames during navigation (not a DevTools profile):
+  - **run-20:** the loading state was painted (2–3 frames, the first 64–74 ms after the click), followed by a **450 ms** gap without frames.
+  - **run-12:** no gap longer than 17 ms.
+  - The details page warns about this for runs of 100,000 points or more. Moving the work to a Web Worker belongs to the performance task.
+
+### Accessibility and responsiveness
+
+- **Structure:** semantic landmarks (one banner, primary nav, main, search form), one `h1` per page, then `h2` sections and `h3` cards. Every control has a `<label>`, and the table has a caption with `scope`d headers.
+- **Sorting:** the sort headers are buttons, and their column headers carry `aria-sort`.
+- **Status messages:** loading uses `role="status"`, and errors use `role="alert"`.
+- **Never color alone:** status, severity and invalid values are always written as text; color is secondary.
+- **Kept from Task 01:** the skip link and visible focus rings.
+- **Small screens:** the table sits in a focusable, labelled scroll region, so it scrolls sideways itself instead of widening the page. Filters and cards reflow from 1 column to 2 or 3. Measured in Chrome at 1440, 820 and 390 px: no horizontal page overflow on the list or on the details pages checked.
+
+### Limitations
+
+- **Main thread:** the million-point run blocks it for about 0.45 s when opened (see above).
+- **List columns:** the list shows declared anomalies and no metric values (by design, to avoid loading every run).
+- **Accessibility checks:** contrast was chosen from Tailwind's 700–900 text on 50–100 backgrounds, but not measured with an automated contrast tool, and no screen-reader testing was done.
+- **Dark mode:** styled, but not screenshot-checked.
+- **Bundle size:** the JS bundle grew from 320.80 kB to 365.18 kB (115.54 kB gzipped) because the UI now includes the data layer.
+
 ## Current implementation status
 
 **Task 01 (project foundation): complete.**
@@ -361,7 +408,14 @@ The spike was kept in every measured result. **Memory:** the heap retained by on
 - [x] Tests against an independent brute-force reference: real datasets, the million-point spike at many zoom levels, edge cases, and 300 randomized cases
 - [x] Node benchmarks (below)
 
-Not implemented yet (later tasks): wiring data into the UI, charts, sorting and filtering, zoom and hover, browser performance work, deployment.
+**Task 05 (dashboard): complete.**
+
+- [x] Runs list: search, sort, status and data-quality filters, clear, empty states, URL-persisted query
+- [x] Run details: metadata, metric summary cards, grouped data quality report, chart placeholders
+- [x] Loading, error (with retry), unknown-run and empty states; stale-response protection
+- [x] Unit/component tests on real data, plus Playwright tests in Chrome (desktop and mobile)
+
+Not implemented yet (later tasks): charts, zoom and hover, browser performance work (Web Worker), deployment.
 
 ### Known notes
 
