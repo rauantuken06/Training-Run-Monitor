@@ -68,6 +68,7 @@ PW_CHANNEL=chrome npm run test:e2e    # or PW_CHANNEL=msedge
 │   ├── features/
 │   │   ├── data/
 │   │   │   ├── catalog/         The 20 run definitions (metadata + declared anomalies)
+│   │   │   ├── downsampling/    Viewport-aware, extrema-preserving downsampling (segment-aware M4)
 │   │   │   ├── generators/      Seeded PRNG, metric curves, deterministic generateRun
 │   │   │   ├── integrity/       Validation, ordering, duplicates, gaps, chart view, summaries
 │   │   │   ├── repository/      RunRepository: lazy, cached access to runs
@@ -91,7 +92,6 @@ Later tasks will add these folders. They are not created yet, to avoid empty pla
 ```
 src/features/runs/components/       list table, filters, sort controls
 src/features/charts/components/     ECharts wrappers
-src/features/data/downsampling/     spike-preserving downsampling
 src/hooks/  src/utils/
 ```
 
@@ -227,7 +227,7 @@ When several records share a step, **the display view shows the last one recorde
 - `displayIndex: Uint32Array` maps each display position (strictly ascending step, one per distinct valid step) to a source index in the raw points. It is the only large structure built; values are read through `stepAt` / `valueAt` from the original objects, so they are never copied.
 - `metrics[m].segments`: a line may be drawn only inside a segment, a maximal range of finite values with no missing steps between them. Invalid values, `null`s and gaps always end a segment, so nothing is drawn across them.
 - `metrics[m].nonFinite` lists each non-finite displayed position and its kind. `gaps` and `duplicates` carry their display positions and issues.
-- Nothing is smoothed, interpolated or downsampled. For Task 04: downsampling can work per segment, keep the per-bucket min and max (which preserves the run-20 spike), and keep every `nonFinite`, `gaps` and `duplicates` entry as an explicit marker. The view is plain data plus a typed array, so it can be passed to a Web Worker.
+- Nothing is smoothed, interpolated or downsampled here; see [Downsampling](#downsampling). The view is plain data plus a typed array, so it can be passed to a Web Worker.
 
 ### Summary rules
 
@@ -264,6 +264,76 @@ Measured in Node 24.13.1 on this Windows dev machine, by bundling with esbuild a
 - The randomized tests cover up to 60 records per case, with steps up to a few hundred; very large steps (beyond 2^53) aren't tested.
 - Whether "last recorded wins" is the right display choice for a specific team's logging setup is a product decision, not something tests can prove.
 
+## Downsampling
+
+`downsampleMetric(view, metric, viewport, budget)` in `src/features/data/downsampling/downsample.ts` reduces one metric of a Task 03 `ChartView` to at most `budget` points for a step range. It is a pure function with no chart dependency.
+
+### Algorithm: segment-aware M4
+
+1. Binary-search the display view for the positions inside the inclusive viewport `[minStep, maxStep]`. No point outside the viewport is ever returned, so the line starts and ends at the first and last visible records rather than at the viewport edge.
+2. Clip the integrity segments to those positions. Only segment points (finite values) are plottable.
+3. Choose a method:
+   - `all`: the visible points fit the budget. Everything is returned, `reduced: false`.
+   - `m4`: split the viewport's step range into `B = floor(budget / 4) − segmentCount` equal-width buckets. Each piece (one bucket within one segment) keeps its **first, last, minimum and maximum** point, deduplicated and in step order.
+   - `endpoints_and_extrema`: the budget is too small for even one bucket (`budget < 4 × (segmentCount + 1)`). Keep every segment's first and last point plus the viewport minimum and maximum. If that still exceeds the budget, return it anyway with a `budget_exceeded` warning rather than merging segments.
+4. Report the visible invalid runs (consecutive non-finite values by kind, split at gaps), the missing-step ranges that overlap the viewport, the duplicates in the viewport that conflict on this metric, and warnings.
+
+**Why this algorithm:** M4 (first/last/min/max per pixel column; Jugel et al., *M4: A Visualization-Oriented Time Series Data Aggregation*, VLDB 2014) is the standard way to reduce a line chart without losing its vertical extent. It is a superset of min/max bucketing; the first/last points keep the joins between columns honest. Buckets are equal **step** widths, not equal point counts, so they line up with screen columns even when sampling is irregular. With `budget ≈ 4 × plot width in px`, each bucket is about one pixel column. Every-Nth-point sampling would have dropped the run-20 spike, which sits on step 500,123, a step chosen not to be a multiple of 2, 5, 10, 100 or 1,000.
+
+### Guarantees (each checked by the tests against an independent reference)
+
+- **Exact extrema:** the minimum and maximum displayed finite values in the viewport are always in `points`, with their exact value, step and source index (`extrema.min` / `extrema.max`). This holds in every method, including over-budget results.
+- **No invented data:** every point is an existing displayed record. Values are raw (`Object.is`-equal), never rounded, clamped, normalized, averaged or interpolated. Tiny, subnormal, negative, `-0`, huge and identical values are all kept exactly.
+- **Order:** steps are strictly ascending.
+- **Segments:** each output segment comes from exactly one integrity segment, and segments are never merged. Every visible segment keeps its first and last visible point. No line between two consecutive points of a segment crosses a `NaN`, `±Infinity`, `null` or missing step.
+- **Markers:** every non-finite visible value is counted in `invalidRuns`, by kind. Gaps and conflicting duplicates in the viewport are listed with their Task 03 issues, which keep every raw record.
+- **Budget:** `outputCount ≤ budget` unless a `budget_exceeded` warning is present. In that case `outputCount ≤ 2 × segments + 2`.
+- **Validation:** non-finite bounds, `minStep > maxStep`, or a budget that isn't a positive integer throw a `RangeError`.
+- **Determinism:** the same inputs always produce the same output.
+
+### Duplicates: displayed vs raw extrema
+
+Only the displayed copy of a duplicate step (the last recorded, per Task 03) is plotted, so `extrema` covers **displayed** values. Task 03's `MetricSummary.min/max` covers **all raw observations**, including hidden copies. The two can differ when duplicates conflict. When that happens in the viewport, the result has a `conflicting_duplicates` warning, and a `hidden_duplicate_outside_extrema` warning (with the record's source index and value) for every hidden finite copy that lies outside the plotted extrema. The hidden values themselves remain available in `conflicts[].records`.
+
+### Complexity and point counts
+
+- **Time:** O(log n + V + I + D + G). Here V is the visible display positions (each read once), I the visible non-finite samples, D the duplicates and G the gaps in the run. A viewport over the whole million-point run is linear in its 1,000,000 points. There is no precomputed pyramid, so cost does not go below O(V).
+- **Space:** O(output + segments + invalid runs + conflicts). No per-metric or per-point copies of the run are made; points are read through the existing `displayIndex`.
+- **Output size:** `min(inputCount, budget)` in the normal case. M4 emits up to 4 points per piece, and fewer where first/last/min/max coincide (e.g. about 2 for a constant series). On the noisy million-point run, budgets of 2,000 and 4,000 gave 1,995 and 3,989 points.
+- **When the budget can't be met:** with more visible segments than about `budget / 2`, for example many isolated `NaN`s at a tiny budget, the integrity-preserving minimum (two endpoints per segment plus the extrema) is larger than the budget. That result is returned with `budget_exceeded` rather than merged or truncated.
+
+### Benchmarks (Node, not a browser)
+
+Measured on the real million-point run (`analyzeRun` done once beforehand; see Task 03 for its ~0.2 s cost), `metric = 'loss'`. Environment: Node 24.13.1 on this Windows dev machine, esbuild bundle, `node --expose-gc`, 5 warm-up calls, then the median of 21 calls, 3 separate processes.
+
+| Viewport | Budget | Input points | Output points | Median time (3 processes) |
+| --- | ---: | ---: | ---: | --- |
+| full range, 1,000,000 steps | 2,000 | 1,000,000 | 1,995 | 19.0–19.8 ms |
+| full range, 1,000,000 steps | 4,000 | 1,000,000 | 3,989 | 17.6–19.3 ms |
+| 100,000 steps around the spike | 2,000 | 100,000 | 1,984 | 3.2–3.3 ms |
+| 100,000 steps around the spike | 4,000 | 100,000 | 3,956 | 1.9–2.0 ms |
+| 1,000 steps around the spike | 2,000 / 4,000 | 1,000 | 1,000 (`all`) | 0.03–0.33 ms |
+
+The spike was kept in every measured result. **Memory:** the heap retained by one result was not reliably measurable this way: readings of 216–248 KB for the full-range results sat beside negative readings for small results, which is GC noise. The structure is O(output), a few thousand small objects. These are Node numbers, not Chrome DevTools numbers; browser profiling is Task 08.
+
+### What downsampling can still lose
+
+**Min/max preservation does not preserve every meaningful feature of a signal.** Within each bucket only the first, last, min and max points survive, so:
+
+- the order and number of oscillations inside a bucket, and any local extremum that isn't the bucket's min or max (e.g. a second, smaller spike in the same bucket), are lost;
+- the distribution of values (density, variance, outlier frequency) inside a bucket is not represented, so a bucket with one outlier and a bucket with many look the same;
+- near the edge of the budget (`endpoints_and_extrema`), each segment is reduced to its endpoints plus the global extrema, so the shape within segments is lost;
+- duplicate copies that aren't displayed are not plotted. They are reported, not drawn;
+- invalid samples are summarized as runs (start, end, count per kind), not as individual markers;
+- extrema are exact only per viewport; a bucket-level "spike" can't be told apart from a single noisy sample without zooming in.
+
+### What the automated tests cannot prove
+
+- That the output looks right on screen. Rendering, axis scaling and pixel alignment belong to later tasks; the tests check data, not pixels.
+- That `budget ≈ 4 × width` is the best setting for a given chart library.
+- Behaviour beyond the tested inputs: the randomized cases go up to 400 records, and the only large input is the synthetic million-point run.
+- Browser performance, memory and main-thread impact (Task 08).
+
 ## Current implementation status
 
 **Task 01 (project foundation): complete.**
@@ -285,7 +355,13 @@ Measured in Node 24.13.1 on this Windows dev machine, by bundling with esbuild a
 - [x] Pure `analyzeRun` that validates values and steps, applies the duplicate policy, detects missing steps, and builds a chart-ready index view and safe summaries
 - [x] Unit tests on the real datasets, edge-case fixtures, and 400 seeded randomized property cases
 
-Not implemented yet (later tasks): wiring data into the UI, charts, downsampling, sorting and filtering, zoom and hover, performance work, deployment.
+**Task 04 (downsampling): complete.**
+
+- [x] Pure `downsampleMetric(view, metric, viewport, budget)`: segment-aware M4 with exact extrema, source indices, invalid-value and gap markers, duplicate conflicts, and budget warnings
+- [x] Tests against an independent brute-force reference: real datasets, the million-point spike at many zoom levels, edge cases, and 300 randomized cases
+- [x] Node benchmarks (below)
+
+Not implemented yet (later tasks): wiring data into the UI, charts, sorting and filtering, zoom and hover, browser performance work, deployment.
 
 ### Known notes
 
