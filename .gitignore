@@ -9,3 +9,8 @@ playwright/.cache
 .vite
 *.log
 .DS_Store
+
+# Local environment files (keep an optional committed template)
+.env
+.env.*
+!.env.example

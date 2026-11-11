@@ -9,8 +9,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc -b",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "node scripts/run-vitest.mjs run",
+    "test:watch": "node scripts/run-vitest.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -36,11 +36,11 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.26",
     "globals": "^16.5.0",
-    "happy-dom": "^20.14.6",
+    "happy-dom": "^21.0.4",
     "tailwindcss": "^4.3.5",
     "typescript": "~5.8",
     "typescript-eslint": "^8.72.2",
     "vite": "^6.4.6",
-    "vitest": "^3.2.7"
+    "vitest": "^4.1.12"
   }
 }
