@@ -53,7 +53,8 @@ export interface RunAnomalies {
 }
 
 export interface RunDefinition {
-  metadata: Omit<TrainingRunMetadata, 'pointCount'>;
+  /** `pointCount` and `sampling` are derived from the definition (see `runMetadata`). */
+  metadata: Omit<TrainingRunMetadata, 'pointCount' | 'sampling'>;
   seed: number;
   /** Number of points on the base grid, before gaps or duplicates are applied. */
   length: number;
@@ -67,6 +68,15 @@ export function gridStepsInRange(def: RunDefinition, range: StepRange): number {
   const first = Math.max(0, Math.ceil(range.fromStep / def.stepInterval));
   const last = Math.min(def.length - 1, Math.floor(range.toStep / def.stepInterval));
   return Math.max(0, last - first + 1);
+}
+
+/** Full metadata for a run, computed from its definition without generating any points. */
+export function runMetadata(def: RunDefinition): TrainingRunMetadata {
+  return {
+    ...def.metadata,
+    pointCount: countPoints(def),
+    sampling: { kind: 'fixed', interval: def.stepInterval },
+  };
 }
 
 /** Exact raw point count, computed from the definition without generating any points. */

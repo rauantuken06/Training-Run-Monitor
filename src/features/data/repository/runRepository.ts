@@ -1,7 +1,7 @@
 import type { TrainingPoint, TrainingRun, TrainingRunMetadata } from '../../../types/training';
 import { RUN_DEFINITIONS } from '../catalog/runCatalog';
 import { generateRun } from '../generators/generateRun';
-import { countPoints, type RunDefinition } from '../generators/runDefinition';
+import { runMetadata, type RunDefinition } from '../generators/runDefinition';
 
 /** Read access to training runs. The UI depends on this interface, not on generators. */
 export interface RunRepository {
@@ -43,7 +43,7 @@ export function createRunRepository(options: RunRepositoryOptions = {}): RunRepo
     if (byId.has(def.metadata.id)) {
       throw new Error(`Duplicate run ID in catalog: ${def.metadata.id}`);
     }
-    byId.set(def.metadata.id, { def, metadata: { ...def.metadata, pointCount: countPoints(def) } });
+    byId.set(def.metadata.id, { def, metadata: runMetadata(def) });
   }
   const metadataList = [...byId.values()].map((entry) => entry.metadata);
 
