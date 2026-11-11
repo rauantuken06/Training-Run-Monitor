@@ -37,15 +37,41 @@ export type RunStatus = 'running' | 'completed' | 'failed' | 'stopped';
 /** A configuration value attached to a run (hyperparameters, tags, etc.). */
 export type RunConfigValue = string | number | boolean;
 
-/** A training run together with its raw, unprocessed points. */
-export interface TrainingRun {
+/**
+ * The behaviour a run was designed to exhibit. Describes intent (ground truth for
+ * the synthetic dataset). It is not the output of any detection logic.
+ */
+export type RunScenario =
+  | 'healthy'
+  | 'noisy'
+  | 'plateau'
+  | 'diverging'
+  | 'nan_loss'
+  | 'infinite_loss'
+  | 'duplicate_steps'
+  | 'unsorted_steps'
+  | 'missing_steps'
+  | 'missing_values'
+  | 'large_dataset'
+  | 'loss_spike';
+
+/** Everything about a run except its points. Cheap to list and never requires generating data. */
+export interface TrainingRunMetadata {
   /** Stable, URL-safe identifier used in `/runs/:runId`. */
   id: string;
   name: string;
+  description: string;
   status: RunStatus;
   /** ISO 8601 timestamp. */
   createdAt: string;
   config: Readonly<Record<string, RunConfigValue>>;
+  scenarios: readonly RunScenario[];
+  /** Exact number of raw points the run contains (including duplicates). */
+  pointCount: number;
+}
+
+/** A training run together with its raw, unprocessed points. */
+export interface TrainingRun extends TrainingRunMetadata {
   /** Points in the order they were received. May be unsorted / duplicated / gappy. */
   points: readonly TrainingPoint[];
 }
