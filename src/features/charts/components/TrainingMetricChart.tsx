@@ -4,10 +4,11 @@ import type { MetricKey } from '../../../types/training';
 import type { Viewport } from '../../data/downsampling/downsample';
 import type { ChartView } from '../../data/integrity/analyzeRun';
 import { METRIC_LABEL } from '../../runs/labels';
+import { timed } from '../../../perf/userTiming';
 import { echarts } from '../echarts';
-import { useElementWidth } from '../hooks/useElementWidth';
+import { FALLBACK_WIDTH, useElementWidth } from '../hooks/useElementWidth';
 import { usePrefersDark } from '../hooks/usePrefersDark';
-import { budgetForWidth, buildChartModel, GRID } from '../model/chartModel';
+import { budgetForWidth, buildChartModelCached, GRID } from '../model/chartModel';
 import { buildEChartsOption, DARK_THEME, LIGHT_THEME } from '../model/echartsOption';
 import { describeHover, hoverHtml, hoverLines } from '../model/hover';
 import { pixelToStep } from '../model/viewport';
@@ -48,7 +49,9 @@ export function TrainingMetricChart({
   onViewportChange: (vp: Viewport) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const width = useElementWidth(containerRef);
+  /** `null` until measured (before first paint); no model is built for a guessed width. */
+  const measuredWidth = useElementWidth(containerRef);
+  const width = measuredWidth ?? FALLBACK_WIDTH;
   const budget = budgetForWidth(width);
   const dark = usePrefersDark();
   const plotWidth = Math.max(1, width - GRID.left - GRID.right);
@@ -61,16 +64,20 @@ export function TrainingMetricChart({
    */
   const cursorStepRef = useRef<number | null>(null);
 
-  const model = useMemo(() => buildChartModel(view, metric, viewport, budget), [view, metric, viewport, budget]);
+  const model = useMemo(
+    () => (measuredWidth === null ? null : buildChartModelCached(view, metric, viewport, budget)),
+    [measuredWidth, view, metric, viewport, budget],
+  );
   const option = useMemo(() => {
+    if (!model) return null;
     const stepsPerPixel = (viewport.maxStep - viewport.minStep) / plotWidth;
     const formatter = (params: unknown) => {
       const step = cursorStepRef.current ?? axisValueOf(params);
       if (step === null) return '';
-      return hoverHtml(hoverLines(model, describeHover(model, step, Math.max(0.5, stepsPerPixel * 4))));
+      return hoverHtml(hoverLines(model, describeHover(model, view, step, stepsPerPixel)));
     };
-    return buildEChartsOption(model, dark ? DARK_THEME : LIGHT_THEME, formatter);
-  }, [model, dark, viewport, plotWidth]);
+    return timed(`option:${metric}`, () => buildEChartsOption(model, dark ? DARK_THEME : LIGHT_THEME, formatter));
+  }, [model, view, metric, dark, viewport, plotWidth]);
 
   const [drag, setDrag] = useState<{ x0: number; x1: number } | null>(null);
   const localX = (e: PointerEvent<HTMLDivElement>) => e.clientX - e.currentTarget.getBoundingClientRect().left;
@@ -103,18 +110,19 @@ export function TrainingMetricChart({
   };
 
   const headingId = `chart-${metric}-heading`;
-  const { result, yBounds } = model;
+  const result = model?.result;
+  const yBounds = model?.yBounds;
   return (
     <section aria-labelledby={headingId} className="min-w-0 space-y-2 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
       {/* "… chart" keeps the region name distinct from the metric summary card of the same metric. */}
       <h3 id={headingId} className="font-semibold">
         {METRIC_LABEL[metric]} chart
       </h3>
-      <ChartStatus model={model} />
+      {model && <ChartStatus model={model} />}
       <div
         ref={containerRef}
         role="img"
-        aria-label={chartSummaryText(model)}
+        aria-label={model ? chartSummaryText(model) : `${METRIC_LABEL[metric]} chart, preparing`}
         data-testid={`metric-chart-${metric}`}
         data-x-min={viewport.minStep}
         data-x-max={viewport.maxStep}
@@ -122,9 +130,9 @@ export function TrainingMetricChart({
         data-y-max={yBounds?.max}
         data-budget={budget}
         data-width={width}
-        data-input={result.inputCount}
-        data-plotted={result.outputCount}
-        data-segments={result.segments.length}
+        data-input={result?.inputCount}
+        data-plotted={result?.outputCount}
+        data-segments={result?.segments.length}
         className="relative w-full cursor-crosshair select-none"
         style={{ height: CHART_HEIGHT }}
         onPointerMoveCapture={trackCursor}
@@ -139,7 +147,9 @@ export function TrainingMetricChart({
           setDrag(null);
         }}
       >
-        <ReactEChartsCore echarts={echarts} option={option} notMerge lazyUpdate opts={{ renderer: 'svg' }} style={{ height: CHART_HEIGHT, width: '100%' }} />
+        {option && (
+          <ReactEChartsCore echarts={echarts} option={option} notMerge lazyUpdate opts={{ renderer: 'svg' }} style={{ height: CHART_HEIGHT, width: '100%' }} />
+        )}
         {drag && Math.abs(drag.x1 - drag.x0) >= 1 && (
           <div
             aria-hidden="true"
@@ -148,7 +158,7 @@ export function TrainingMetricChart({
           />
         )}
       </div>
-      <ChartAccessibilitySummary model={model} />
+      {model && <ChartAccessibilitySummary model={model} />}
     </section>
   );
 }

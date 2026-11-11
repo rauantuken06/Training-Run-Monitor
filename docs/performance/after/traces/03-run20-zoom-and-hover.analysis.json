@@ -1,0 +1,215 @@
+{
+ "file": "docs/performance/after/traces/03-run20-zoom-and-hover.json.gz",
+ "mainThreadBusyMs": 5624.8,
+ "longTaskCount": 16,
+ "longTaskTotalMs": 2796.7,
+ "longTaskBreakdownTotalsMs": {
+  "gc": 14.8,
+  "styleLayout": 182.6,
+  "paint": 42.2,
+  "other": 2299.3,
+  "downsample": 250,
+  "option": 8.2
+ },
+ "longTasks": [
+  {
+   "startMs": 13.3,
+   "durationMs": 1238.7,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 1238.7
+   }
+  },
+  {
+   "startMs": 1255.6,
+   "durationMs": 86.6,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 86.7
+   }
+  },
+  {
+   "startMs": 1392.3,
+   "durationMs": 403,
+   "breakdown": {
+    "downsample": 250,
+    "option": 2.3,
+    "gc": 7.3,
+    "styleLayout": 9,
+    "paint": 0,
+    "other": 134.4
+   }
+  },
+  {
+   "startMs": 1795.7,
+   "durationMs": 145.3,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 14.6,
+    "paint": 6.2,
+    "other": 124.5
+   }
+  },
+  {
+   "startMs": 3198.7,
+   "durationMs": 60.1,
+   "breakdown": {
+    "option": 1.9,
+    "gc": 0,
+    "styleLayout": 3.7,
+    "paint": 0,
+    "other": 54.5
+   }
+  },
+  {
+   "startMs": 3259,
+   "durationMs": 107.4,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 12.8,
+    "paint": 5.1,
+    "other": 89.5
+   }
+  },
+  {
+   "startMs": 4625.5,
+   "durationMs": 50.6,
+   "breakdown": {
+    "option": 2.5,
+    "gc": 0,
+    "styleLayout": 5.2,
+    "paint": 0,
+    "other": 42.9
+   }
+  },
+  {
+   "startMs": 4676.1,
+   "durationMs": 99.8,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 14.5,
+    "paint": 4.7,
+    "other": 80.7
+   }
+  },
+  {
+   "startMs": 6027.6,
+   "durationMs": 58.7,
+   "breakdown": {
+    "option": 1.5,
+    "gc": 0,
+    "styleLayout": 4.2,
+    "paint": 0,
+    "other": 53.1
+   }
+  },
+  {
+   "startMs": 6086.4,
+   "durationMs": 121.8,
+   "breakdown": {
+    "gc": 7.5,
+    "styleLayout": 15.4,
+    "paint": 7.5,
+    "other": 91.4
+   }
+  },
+  {
+   "startMs": 7485,
+   "durationMs": 153,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 49,
+    "paint": 3.1,
+    "other": 100.9
+   }
+  },
+  {
+   "startMs": 7785.1,
+   "durationMs": 51.6,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 7.1,
+    "paint": 1.7,
+    "other": 42.8
+   }
+  },
+  {
+   "startMs": 8385.3,
+   "durationMs": 52.7,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 8.3,
+    "paint": 3,
+    "other": 41.4
+   }
+  },
+  {
+   "startMs": 8585.1,
+   "durationMs": 54.7,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 11.9,
+    "paint": 2.7,
+    "other": 40.1
+   }
+  },
+  {
+   "startMs": 8785.2,
+   "durationMs": 57.2,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 13.9,
+    "paint": 4.9,
+    "other": 38.4
+   }
+  },
+  {
+   "startMs": 11634.9,
+   "durationMs": 55.5,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 13,
+    "paint": 3.3,
+    "other": 39.3
+   }
+  }
+ ],
+ "eventDispatch": {
+  "pointermove": {
+   "count": 34,
+   "medianMs": 1.7,
+   "p95Ms": 4.4,
+   "maxMs": 4.9
+  },
+  "mousemove": {
+   "count": 34,
+   "medianMs": 17.2,
+   "p95Ms": 33.6,
+   "maxMs": 125.1
+  },
+  "pointerdown": {
+   "count": 4,
+   "medianMs": 1.2,
+   "p95Ms": 5.8,
+   "maxMs": 5.8
+  },
+  "pointerup": {
+   "count": 4,
+   "medianMs": 0.8,
+   "p95Ms": 1.2,
+   "maxMs": 1.2
+  },
+  "click": {
+   "count": 4,
+   "medianMs": 49.9,
+   "p95Ms": 342.8,
+   "maxMs": 342.8
+  }
+ },
+ "workerThreads": [],
+ "workerPhases": []
+}

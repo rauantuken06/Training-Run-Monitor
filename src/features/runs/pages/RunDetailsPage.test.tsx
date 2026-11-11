@@ -39,6 +39,9 @@ describe('RunDetailsPage: loading, errors and unknown runs', () => {
     });
     await act(() => c.resolve('run-12'));
     await ready();
+    expect(screen.queryByText(/Loading 2,000 observations/)).not.toBeInTheDocument();
+    // The lazily loaded charts then replace their "Loading the chart component…" placeholders.
+    expect(await screen.findByTestId('metric-chart-loss')).toBeInTheDocument();
     expect(screen.queryByText(/Loading/)).not.toBeInTheDocument();
   });
 

@@ -47,11 +47,14 @@ describe('tooltip', () => {
     expect(html).toContain('Missing steps 3,000–3,990 (100 not recorded). The line is broken here.');
   });
 
-  it('falls back to the axis value when the cursor position is unknown', () => {
+  it('falls back to the axis value when the cursor position is unknown, and says the pixel holds 2 observations', () => {
     const el = renderChart('run-09');
     fireEvent.pointerLeave(el);
     const html = lastFormatter()([{ axisValue: 19_990 }]);
-    expect(html).toMatch(/^<strong>Step 19,990<\/strong><br\/>Loss: 102\.47 \(exact 102\.47\d+\)$/);
+    // 19,990 steps over 884 px ≈ 22.6 steps per pixel: the pixel holds steps 19,980 and 19,990.
+    expect(html).toMatch(
+      /^<strong>Cursor: steps 19,979–20,001 \(2 observations in this pixel\)<\/strong><br\/>Nearest plotted observation: step 19,990 \(in this pixel\)<br\/>Loss: 102\.47 \(exact 102\.47\d+\)$/,
+    );
   });
 
   it('shows exact values and the duplicate warning for a conflicting step', () => {

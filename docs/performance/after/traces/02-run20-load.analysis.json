@@ -1,0 +1,164 @@
+{
+ "file": "docs/performance/after/traces/02-run20-load.json.gz",
+ "mainThreadBusyMs": 2195.1,
+ "longTaskCount": 12,
+ "longTaskTotalMs": 1889.8,
+ "longTaskBreakdownTotalsMs": {
+  "gc": 53.9,
+  "styleLayout": 386,
+  "paint": 21.4,
+  "other": 986.5,
+  "decode": 135.9,
+  "downsample": 302.4,
+  "option": 4
+ },
+ "longTasks": [
+  {
+   "startMs": 19,
+   "durationMs": 62.5,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 0.2,
+    "paint": 0,
+    "other": 62.3
+   }
+  },
+  {
+   "startMs": 94.4,
+   "durationMs": 68.8,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 68.8
+   }
+  },
+  {
+   "startMs": 178.6,
+   "durationMs": 132.8,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 1.2,
+    "paint": 0,
+    "other": 131.6
+   }
+  },
+  {
+   "startMs": 324.8,
+   "durationMs": 109.4,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 109.4
+   }
+  },
+  {
+   "startMs": 434.3,
+   "durationMs": 184.4,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 179.3,
+    "paint": 3.1,
+    "other": 2.1
+   }
+  },
+  {
+   "startMs": 619.1,
+   "durationMs": 59,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 59.1
+   }
+  },
+  {
+   "startMs": 768.3,
+   "durationMs": 60.3,
+   "breakdown": {
+    "gc": 2.6,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 57.7
+   }
+  },
+  {
+   "startMs": 1328.7,
+   "durationMs": 191.9,
+   "breakdown": {
+    "decode": 135.9,
+    "gc": 47.9,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 8.1
+   }
+  },
+  {
+   "startMs": 1569.2,
+   "durationMs": 160.6,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 149.9,
+    "paint": 8.9,
+    "other": 1.9
+   }
+  },
+  {
+   "startMs": 1867.1,
+   "durationMs": 388,
+   "breakdown": {
+    "downsample": 302.4,
+    "option": 4,
+    "gc": 0,
+    "styleLayout": 23.9,
+    "paint": 0,
+    "other": 57.7
+   }
+  },
+  {
+   "startMs": 2255.1,
+   "durationMs": 139.9,
+   "breakdown": {
+    "gc": 3.4,
+    "styleLayout": 8.3,
+    "paint": 2.5,
+    "other": 125.7
+   }
+  },
+  {
+   "startMs": 2401.6,
+   "durationMs": 332.2,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 23.2,
+    "paint": 6.9,
+    "other": 302.1
+   }
+  }
+ ],
+ "eventDispatch": {},
+ "workerThreads": [
+  {
+   "thread": "DedicatedWorker thread",
+   "busyMs": 510.7
+  }
+ ],
+ "workerPhases": [
+  {
+   "name": "generate:run-20",
+   "thread": "DedicatedWorker thread",
+   "durationMs": 301.2
+  },
+  {
+   "name": "analyze:run-20",
+   "thread": "DedicatedWorker thread",
+   "durationMs": 176.8
+  },
+  {
+   "name": "encode:run-20",
+   "thread": "DedicatedWorker thread",
+   "durationMs": 20.1
+  }
+ ]
+}

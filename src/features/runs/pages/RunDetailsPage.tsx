@@ -1,7 +1,7 @@
+import { Component, lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
 import { paths } from '../../../app/paths';
 import type { MetricKey, TrainingRunMetadata } from '../../../types/training';
-import { RunCharts } from '../../charts/components/RunCharts';
 import { ChartPlaceholder } from '../components/ChartPlaceholder';
 import { DataQualitySummary } from '../components/DataQualitySummary';
 import { MetricSummaryCard } from '../components/MetricSummaryCard';
@@ -56,8 +56,19 @@ function RunNotFound({ runId }: { runId: string }) {
   );
 }
 
+/**
+ * Charts (and ECharts) are a separate chunk, so the runs list never downloads them.
+ * Measured in Task 08: the single bundle was 950 kB, about 580 kB of it chart code.
+ */
+const loadRunCharts = () => import('../../charts/components/RunCharts');
+const RunCharts = lazy(() => loadRunCharts().then((m) => ({ default: m.RunCharts })));
+
 function RunDetails({ metadata }: { metadata: TrainingRunMetadata }) {
   useDocumentTitle(metadata.name);
+  // Start downloading the chart chunk now, in parallel with loading the run data.
+  useEffect(() => {
+    void loadRunCharts().catch(() => undefined); // a failure is shown by ChartLoadBoundary when rendering
+  }, []);
   const { state, retry } = useRunAnalysis(metadata.id);
   const configEntries = Object.entries(metadata.config);
 
@@ -78,9 +89,11 @@ function RunDetails({ metadata }: { metadata: TrainingRunMetadata }) {
             <dd className="font-mono tabular-nums">{formatCount(metadata.pointCount)}</dd>
           </div>
           <div>
-            <dt className="text-slate-600 dark:text-slate-400">Created</dt>
+            <dt className="text-slate-600 dark:text-slate-400">Created (UTC)</dt>
             <dd>
-              <time dateTime={metadata.createdAt}>{formatDate(metadata.createdAt)}</time>
+              <time dateTime={metadata.createdAt} title={metadata.createdAt}>
+                {formatDate(metadata.createdAt)}
+              </time>
             </dd>
           </div>
           <div>
@@ -128,6 +141,7 @@ function RunDetails({ metadata }: { metadata: TrainingRunMetadata }) {
         {state.status === 'ready' && (
           <>
             <p className="text-sm text-slate-700 dark:text-slate-300">
+              <strong>Whole run:</strong> these values do not change when you zoom the charts.{' '}
               {formatCount(state.analysis.diagnostics.totalRecords)} raw records across{' '}
               {formatCount(state.analysis.diagnostics.distinctSteps)} distinct steps. Minimum and maximum include every raw
               record, including hidden duplicate copies; last values follow the displayed (sorted, deduplicated) series.
@@ -144,24 +158,52 @@ function RunDetails({ metadata }: { metadata: TrainingRunMetadata }) {
       {state.status === 'ready' && <DataQualitySummary diagnostics={state.analysis.diagnostics} />}
 
       {state.status === 'ready' ? (
-        <RunCharts key={state.runId} view={state.analysis.view} />
+        <ChartLoadBoundary>
+          <Suspense fallback={<ChartsPlaceholder message="Loading the chart component…" />}>
+            <RunCharts key={state.runId} view={state.analysis.view} />
+          </Suspense>
+        </ChartLoadBoundary>
       ) : (
-        <section aria-labelledby="charts-heading" className="space-y-3">
-          <h2 id="charts-heading" className="text-lg font-semibold">
-            Charts
-          </h2>
-          <div className="grid grid-cols-1 gap-4">
-            {METRICS.map((m) => (
-              <ChartPlaceholder
-                key={m}
-                id={`chart-${m}`}
-                title={METRIC_LABEL[m]}
-                message={state.status === 'loading' ? 'Chart appears once the run data has loaded.' : 'No chart: the run data could not be loaded.'}
-              />
-            ))}
-          </div>
-        </section>
+        <ChartsPlaceholder
+          message={state.status === 'loading' ? 'Chart appears once the run data has loaded.' : 'No chart: the run data could not be loaded.'}
+        />
       )}
     </div>
   );
+}
+
+function ChartsPlaceholder({ message }: { message: string }) {
+  return (
+    <section aria-labelledby="charts-heading" className="space-y-3">
+      <h2 id="charts-heading" className="text-lg font-semibold">
+        Charts
+      </h2>
+      <div className="grid grid-cols-1 gap-4">
+        {METRICS.map((m) => (
+          <ChartPlaceholder key={m} id={`chart-${m}`} title={METRIC_LABEL[m]} message={message} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** Shows a visible error instead of breaking the page if the chart code cannot be downloaded. */
+class ChartLoadBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  override state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  override render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <section aria-labelledby="charts-heading" className="space-y-3">
+        <h2 id="charts-heading" className="text-lg font-semibold">
+          Charts
+        </h2>
+        <p role="alert" className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
+          The chart component could not be loaded (network error). Reload the page to try again. The summaries above are complete.
+        </p>
+      </section>
+    );
+  }
 }

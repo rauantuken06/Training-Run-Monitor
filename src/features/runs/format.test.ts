@@ -36,6 +36,33 @@ describe('formatFinite', () => {
   });
 });
 
+describe('formatFinite never misrepresents a value', () => {
+  it('never shows a nonzero value as zero, keeps its sign, and stays within rounding error (seeded sweep)', () => {
+    const problems: string[] = [];
+    let seed = 12_345;
+    const rand = () => ((seed = (seed * 1_103_515_245 + 12_345) % 2 ** 31) / 2 ** 31);
+    for (let i = 0; i < 20_000; i++) {
+      const exponent = Math.floor(rand() * 600) - 300;
+      const value = (rand() < 0.5 ? -1 : 1) * (1 + rand() * 9) * 10 ** exponent;
+      if (!Number.isFinite(value) || value === 0) continue;
+      for (const digits of [5, 9]) {
+        const text = formatFinite(value, digits);
+        const back = Number(text);
+        if (back === 0 || /^-?0$/.test(text)) problems.push(`${value} -> ${text}`);
+        if (Math.sign(back) !== Math.sign(value)) problems.push(`sign ${value} -> ${text}`);
+        if (Math.abs(back - value) > Math.abs(value) * 10 ** (1 - digits)) problems.push(`error ${value} -> ${text}`);
+        if (/[^\d.e+-]/.test(text)) problems.push(`locale chars in ${text}`);
+      }
+    }
+    expect(problems).toEqual([]);
+  });
+
+  it('uses a fixed format, independent of the runtime locale', () => {
+    expect(formatFinite(1234.5)).toBe('1234.5');
+    expect(formatCount(1_234_567)).toBe('1,234,567'); // en-US grouping by policy, also in de-DE / ru-RU browsers
+  });
+});
+
 describe('formatCount / formatDate', () => {
   it('groups digits and formats dates in UTC', () => {
     expect(formatCount(1_000_000)).toBe('1,000,000');

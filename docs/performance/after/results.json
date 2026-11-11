@@ -1,0 +1,459 @@
+{
+  "label": "after",
+  "environment": {
+    "chrome": "157.0.8103.39",
+    "cpuThrottling": 4,
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "headless": "new headless (channel chrome)",
+    "cacheDisabled": true,
+    "node": "v24.13.1",
+    "date": "2026-11-11T19:56:41.512Z"
+  },
+  "build": [
+    {
+      "file": "index-BYTBkZRo.css",
+      "bytes": 22461,
+      "gzipBytes": 5357
+    },
+    {
+      "file": "index-CDxWbky9.js",
+      "bytes": 370521,
+      "gzipBytes": 117566
+    },
+    {
+      "file": "run.worker-DebzaydO.js",
+      "bytes": 17031,
+      "gzipBytes": 6204
+    },
+    {
+      "file": "RunCharts-o4FLRz4A.js",
+      "bytes": 582453,
+      "gzipBytes": 200882
+    }
+  ],
+  "runs": [
+    {
+      "list": {
+        "fcpMs": 780,
+        "lcpMs": 780,
+        "listDomMs": 478.2,
+        "listPaintedMs": 762,
+        "longTaskCount": 3,
+        "longTaskTotalMs": 560,
+        "maxLongTaskMs": 255,
+        "tbtMs": 410,
+        "jsBytesDownloaded": 370521,
+        "jsFiles": [
+          "index-CDxWbky9.js"
+        ],
+        "memory": {
+          "jsHeapUsedMB": 2.4,
+          "jsHeapTotalMB": 3.1,
+          "domNodes": 710
+        },
+        "errors": []
+      },
+      "run20": {
+        "load": {
+          "shellPaintedMs": 604.1,
+          "loadingPaintedMs": 604.3,
+          "dataReadyMs": 1326.3,
+          "chartsDomMs": 2516.6,
+          "chartsPaintedMs": 2530.4,
+          "longTaskCount": 8,
+          "longTaskTotalMs": 1428,
+          "maxLongTaskMs": 319,
+          "tbtMs": 1028,
+          "jsBytesDownloaded": 970005,
+          "jsFiles": [
+            "index-CDxWbky9.js",
+            "RunCharts-o4FLRz4A.js",
+            "run.worker-DebzaydO.js"
+          ],
+          "phases": {
+            "decode:run-20": 135.4,
+            "downsample:loss": 59,
+            "option:loss": 2.5,
+            "downsample:lr": 100.9,
+            "option:lr": 0.6,
+            "downsample:grad_norm": 107.2,
+            "option:grad_norm": 0.4
+          }
+        },
+        "memory": {
+          "jsHeapUsedMB": 74.2,
+          "jsHeapTotalMB": 74.6,
+          "domNodes": 569
+        },
+        "zoomInMs": [
+          632,
+          192,
+          128,
+          128,
+          120
+        ],
+        "resetMs": [
+          176,
+          144,
+          160,
+          120,
+          128
+        ],
+        "xRangeAfterReset": [
+          "0",
+          "999999"
+        ],
+        "hover": {
+          "moves": 30,
+          "processingMedianMs": 12.2,
+          "processingMaxMs": 21.7,
+          "nextFrameMedianMs": 31,
+          "nextFrameMaxMs": 124.6
+        },
+        "zoomInMedianMs": 128,
+        "resetMedianMs": 144,
+        "errors": []
+      }
+    },
+    {
+      "list": {
+        "fcpMs": 796,
+        "lcpMs": 796,
+        "listDomMs": 538.6,
+        "listPaintedMs": 815.2,
+        "longTaskCount": 3,
+        "longTaskTotalMs": 635,
+        "maxLongTaskMs": 242,
+        "tbtMs": 485,
+        "jsBytesDownloaded": 370521,
+        "jsFiles": [
+          "index-CDxWbky9.js"
+        ],
+        "memory": {
+          "jsHeapUsedMB": 2.3,
+          "jsHeapTotalMB": 3.1,
+          "domNodes": 710
+        },
+        "errors": []
+      },
+      "run20": {
+        "load": {
+          "shellPaintedMs": 604.5,
+          "loadingPaintedMs": 605.4,
+          "dataReadyMs": 1354.3,
+          "chartsDomMs": 2510.8,
+          "chartsPaintedMs": 2524.9,
+          "longTaskCount": 8,
+          "longTaskTotalMs": 1414,
+          "maxLongTaskMs": 331,
+          "tbtMs": 1014,
+          "jsBytesDownloaded": 970005,
+          "jsFiles": [
+            "index-CDxWbky9.js",
+            "RunCharts-o4FLRz4A.js",
+            "run.worker-DebzaydO.js"
+          ],
+          "phases": {
+            "decode:run-20": 146.9,
+            "downsample:loss": 66.6,
+            "option:loss": 2,
+            "downsample:lr": 109.2,
+            "option:lr": 0.6,
+            "downsample:grad_norm": 106.5,
+            "option:grad_norm": 0.2
+          }
+        },
+        "memory": {
+          "jsHeapUsedMB": 74.2,
+          "jsHeapTotalMB": 74.6,
+          "domNodes": 569
+        },
+        "zoomInMs": [
+          400,
+          144,
+          128,
+          128,
+          120
+        ],
+        "resetMs": [
+          176,
+          144,
+          120,
+          112,
+          144
+        ],
+        "xRangeAfterReset": [
+          "0",
+          "999999"
+        ],
+        "hover": {
+          "moves": 30,
+          "processingMedianMs": 11.7,
+          "processingMaxMs": 19.7,
+          "nextFrameMedianMs": 30.9,
+          "nextFrameMaxMs": 112.9
+        },
+        "zoomInMedianMs": 128,
+        "resetMedianMs": 144,
+        "errors": []
+      }
+    },
+    {
+      "list": {
+        "fcpMs": 740,
+        "lcpMs": 740,
+        "listDomMs": 482.3,
+        "listPaintedMs": 763.3,
+        "longTaskCount": 3,
+        "longTaskTotalMs": 583,
+        "maxLongTaskMs": 213,
+        "tbtMs": 433,
+        "jsBytesDownloaded": 370521,
+        "jsFiles": [
+          "index-CDxWbky9.js"
+        ],
+        "memory": {
+          "jsHeapUsedMB": 2.3,
+          "jsHeapTotalMB": 3.1,
+          "domNodes": 710
+        },
+        "errors": []
+      },
+      "run20": {
+        "load": {
+          "shellPaintedMs": 602.6,
+          "loadingPaintedMs": 602.6,
+          "dataReadyMs": 1315.4,
+          "chartsDomMs": 2429.4,
+          "chartsPaintedMs": 2444.6,
+          "longTaskCount": 8,
+          "longTaskTotalMs": 1423,
+          "maxLongTaskMs": 355,
+          "tbtMs": 1023,
+          "jsBytesDownloaded": 970005,
+          "jsFiles": [
+            "index-CDxWbky9.js",
+            "RunCharts-o4FLRz4A.js",
+            "run.worker-DebzaydO.js"
+          ],
+          "phases": {
+            "decode:run-20": 134,
+            "downsample:loss": 73.2,
+            "option:loss": 3.2,
+            "downsample:lr": 112.3,
+            "option:lr": 0.5,
+            "downsample:grad_norm": 111.4,
+            "option:grad_norm": 0.9
+          }
+        },
+        "memory": {
+          "jsHeapUsedMB": 74.2,
+          "jsHeapTotalMB": 74.6,
+          "domNodes": 569
+        },
+        "zoomInMs": [
+          408,
+          144,
+          112,
+          168,
+          208
+        ],
+        "resetMs": [
+          192,
+          144,
+          128,
+          128,
+          128
+        ],
+        "xRangeAfterReset": [
+          "0",
+          "999999"
+        ],
+        "hover": {
+          "moves": 30,
+          "processingMedianMs": 12.8,
+          "processingMaxMs": 20.4,
+          "nextFrameMedianMs": 32.8,
+          "nextFrameMaxMs": 141.3
+        },
+        "zoomInMedianMs": 168,
+        "resetMedianMs": 128,
+        "errors": []
+      }
+    },
+    {
+      "list": {
+        "fcpMs": 728,
+        "lcpMs": 728,
+        "listDomMs": 491.7,
+        "listPaintedMs": 710,
+        "longTaskCount": 3,
+        "longTaskTotalMs": 547,
+        "maxLongTaskMs": 195,
+        "tbtMs": 397,
+        "jsBytesDownloaded": 370521,
+        "jsFiles": [
+          "index-CDxWbky9.js"
+        ],
+        "memory": {
+          "jsHeapUsedMB": 2.3,
+          "jsHeapTotalMB": 3.1,
+          "domNodes": 710
+        },
+        "errors": []
+      },
+      "run20": {
+        "load": {
+          "shellPaintedMs": 609,
+          "loadingPaintedMs": 609.2,
+          "dataReadyMs": 1329.6,
+          "chartsDomMs": 2610.1,
+          "chartsPaintedMs": 2627.1,
+          "longTaskCount": 8,
+          "longTaskTotalMs": 1389,
+          "maxLongTaskMs": 332,
+          "tbtMs": 989,
+          "jsBytesDownloaded": 970005,
+          "jsFiles": [
+            "index-CDxWbky9.js",
+            "RunCharts-o4FLRz4A.js",
+            "run.worker-DebzaydO.js"
+          ],
+          "phases": {
+            "decode:run-20": 145,
+            "downsample:loss": 61.8,
+            "option:loss": 2,
+            "downsample:lr": 106.9,
+            "option:lr": 0.4,
+            "downsample:grad_norm": 109.6,
+            "option:grad_norm": 0.4
+          }
+        },
+        "memory": {
+          "jsHeapUsedMB": 74.2,
+          "jsHeapTotalMB": 74.6,
+          "domNodes": 569
+        },
+        "zoomInMs": [
+          552,
+          176,
+          136,
+          144,
+          112
+        ],
+        "resetMs": [
+          192,
+          128,
+          128,
+          112,
+          128
+        ],
+        "xRangeAfterReset": [
+          "0",
+          "999999"
+        ],
+        "hover": {
+          "moves": 30,
+          "processingMedianMs": 9.9,
+          "processingMaxMs": 19.9,
+          "nextFrameMedianMs": 27.6,
+          "nextFrameMaxMs": 122.2
+        },
+        "zoomInMedianMs": 144,
+        "resetMedianMs": 128,
+        "errors": []
+      }
+    },
+    {
+      "list": {
+        "fcpMs": 828,
+        "lcpMs": 828,
+        "listDomMs": 548.4,
+        "listPaintedMs": 859,
+        "longTaskCount": 3,
+        "longTaskTotalMs": 659,
+        "maxLongTaskMs": 243,
+        "tbtMs": 509,
+        "jsBytesDownloaded": 370521,
+        "jsFiles": [
+          "index-CDxWbky9.js"
+        ],
+        "memory": {
+          "jsHeapUsedMB": 2.3,
+          "jsHeapTotalMB": 3.1,
+          "domNodes": 710
+        },
+        "errors": []
+      },
+      "run20": {
+        "load": {
+          "shellPaintedMs": 640.5,
+          "loadingPaintedMs": 640.8,
+          "dataReadyMs": 1415.9,
+          "chartsDomMs": 2824.1,
+          "chartsPaintedMs": 2835.9,
+          "longTaskCount": 9,
+          "longTaskTotalMs": 1577,
+          "maxLongTaskMs": 379,
+          "tbtMs": 1127,
+          "jsBytesDownloaded": 970005,
+          "jsFiles": [
+            "index-CDxWbky9.js",
+            "RunCharts-o4FLRz4A.js",
+            "run.worker-DebzaydO.js"
+          ],
+          "phases": {
+            "decode:run-20": 154.8,
+            "downsample:loss": 61,
+            "option:loss": 1.9,
+            "downsample:lr": 129.4,
+            "option:lr": 3.5,
+            "downsample:grad_norm": 137.2,
+            "option:grad_norm": 0.3
+          }
+        },
+        "memory": {
+          "jsHeapUsedMB": 74.2,
+          "jsHeapTotalMB": 74.6,
+          "domNodes": 569
+        },
+        "zoomInMs": [
+          440,
+          248,
+          160,
+          144,
+          160
+        ],
+        "resetMs": [
+          176,
+          224,
+          128,
+          112,
+          128
+        ],
+        "xRangeAfterReset": [
+          "0",
+          "999999"
+        ],
+        "hover": {
+          "moves": 30,
+          "processingMedianMs": 12.3,
+          "processingMaxMs": 19.3,
+          "nextFrameMedianMs": 28.9,
+          "nextFrameMaxMs": 120
+        },
+        "zoomInMedianMs": 160,
+        "resetMedianMs": 128,
+        "errors": []
+      }
+    }
+  ],
+  "traces": {
+    "01-list-load": "docs/performance/after/traces/01-list-load.json.gz",
+    "02-run20-load": "docs/performance/after/traces/02-run20-load.json.gz",
+    "03-run20-zoom-and-hover": "docs/performance/after/traces/03-run20-zoom-and-hover.json.gz"
+  }
+}

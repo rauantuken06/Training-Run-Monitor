@@ -3,7 +3,7 @@ import type { InvalidRun } from '../../data/downsampling/downsample';
 import { formatCount, formatFinite } from '../../runs/format';
 import { METRIC_LABEL } from '../../runs/labels';
 import type { MetricChartOption } from '../echarts';
-import { GRID, type ChartModel } from './chartModel';
+import { axisLabelDigits, GRID, type ChartModel } from './chartModel';
 
 export interface ChartTheme {
   readonly line: string;
@@ -74,6 +74,7 @@ export function buildEChartsOption(
   const { viewport, result, yBounds } = model;
   const clampX = (x: number) => Math.min(viewport.maxStep, Math.max(viewport.minStep, x));
   const label = METRIC_LABEL[model.metric];
+  const yDigits = axisLabelDigits(yBounds);
 
   const lineSeries: LineSeriesOption[] = model.seriesData.map((data, i) => ({
     type: 'line',
@@ -176,7 +177,7 @@ export function buildEChartsOption(
       min: yBounds?.min ?? 0,
       max: yBounds?.max ?? 1,
       // Padded bounds are not data values, so only regular ticks are labelled.
-      axisLabel: { color: theme.text, hideOverlap: true, showMinLabel: false, showMaxLabel: false, formatter: (v: number) => formatFinite(v) },
+      axisLabel: { color: theme.text, hideOverlap: true, showMinLabel: false, showMaxLabel: false, formatter: (v: number) => formatFinite(v, yDigits) },
       axisLine: { show: true, lineStyle: { color: theme.axis } },
       splitLine: { lineStyle: { color: theme.split } },
     },

@@ -1,0 +1,384 @@
+{
+  "baseline": "baseline",
+  "optimized": "after",
+  "rows": [
+    {
+      "metric": "Runs list: first contentful paint",
+      "unit": "ms",
+      "method": "Paint Timing (FCP), from navigation start",
+      "before": 960,
+      "beforeRange": [
+        868,
+        1392
+      ],
+      "beforeSamples": 5,
+      "after": 780,
+      "afterRange": [
+        728,
+        828
+      ],
+      "afterSamples": 5,
+      "diff": -180,
+      "pct": -18.75
+    },
+    {
+      "metric": "Runs list: table painted",
+      "unit": "ms",
+      "method": "20 rows in DOM, then next painted frame",
+      "before": 977.9,
+      "beforeRange": [
+        895.9,
+        1421.1
+      ],
+      "beforeSamples": 5,
+      "after": 763.3,
+      "afterRange": [
+        710,
+        859
+      ],
+      "afterSamples": 5,
+      "diff": -214.60000000000002,
+      "pct": -21.944984149708564
+    },
+    {
+      "metric": "Runs list: total blocking time",
+      "unit": "ms",
+      "method": "Σ(long task − 50 ms) until table painted",
+      "before": 604,
+      "beforeRange": [
+        533,
+        829
+      ],
+      "beforeSamples": 5,
+      "after": 433,
+      "afterRange": [
+        397,
+        509
+      ],
+      "afterSamples": 5,
+      "diff": -171,
+      "pct": -28.311258278145697
+    },
+    {
+      "metric": "Runs list: JS downloaded",
+      "unit": "kB",
+      "method": "Resource Timing decodedBodySize of .js",
+      "before": 950.06,
+      "beforeRange": [
+        950.06,
+        950.06
+      ],
+      "beforeSamples": 5,
+      "after": 370.521,
+      "afterRange": [
+        370.521,
+        370.521
+      ],
+      "afterSamples": 5,
+      "diff": -579.539,
+      "pct": -61.00025261562428
+    },
+    {
+      "metric": "Runs list: JS heap after GC",
+      "unit": "MB",
+      "method": "CDP Performance.getMetrics JSHeapUsedSize after 2× forced GC",
+      "before": 3.5,
+      "beforeRange": [
+        3.5,
+        3.5
+      ],
+      "beforeSamples": 5,
+      "after": 2.3,
+      "afterRange": [
+        2.3,
+        2.4
+      ],
+      "afterSamples": 5,
+      "diff": -1.2000000000000002,
+      "pct": -34.28571428571429
+    },
+    {
+      "metric": "run-20: loading message painted",
+      "unit": "ms",
+      "method": "deep link; status \"Loading…\" in DOM, then next frame",
+      "before": 798.1,
+      "beforeRange": [
+        753,
+        923
+      ],
+      "beforeSamples": 5,
+      "after": 605.4,
+      "afterRange": [
+        602.6,
+        640.8
+      ],
+      "afterSamples": 5,
+      "diff": -192.70000000000005,
+      "pct": -24.14484400451072
+    },
+    {
+      "metric": "run-20: data ready (summaries)",
+      "unit": "ms",
+      "method": "\"Data quality\" heading in DOM",
+      "before": 3208.3,
+      "beforeRange": [
+        3053.8,
+        3762.4
+      ],
+      "beforeSamples": 5,
+      "after": 1329.6,
+      "afterRange": [
+        1315.4,
+        1415.9
+      ],
+      "afterSamples": 5,
+      "diff": -1878.7000000000003,
+      "pct": -58.55749150640527
+    },
+    {
+      "metric": "run-20: charts painted (first render)",
+      "unit": "ms",
+      "method": "all 3 chart lines in DOM, then next frame",
+      "before": 4347.6,
+      "beforeRange": [
+        4072.4,
+        5021.5
+      ],
+      "beforeSamples": 5,
+      "after": 2530.4,
+      "afterRange": [
+        2444.6,
+        2835.9
+      ],
+      "afterSamples": 5,
+      "diff": -1817.2000000000003,
+      "pct": -41.79777348422118
+    },
+    {
+      "metric": "run-20: total blocking time",
+      "unit": "ms",
+      "method": "Σ(long task − 50 ms) until charts painted",
+      "before": 3638,
+      "beforeRange": [
+        3343,
+        4292
+      ],
+      "beforeSamples": 5,
+      "after": 1023,
+      "afterRange": [
+        989,
+        1127
+      ],
+      "afterSamples": 5,
+      "diff": -2615,
+      "pct": -71.88015393073117
+    },
+    {
+      "metric": "run-20: longest main-thread task",
+      "unit": "ms",
+      "method": "Long Tasks API",
+      "before": 1824,
+      "beforeRange": [
+        1619,
+        2035
+      ],
+      "beforeSamples": 5,
+      "after": 332,
+      "afterRange": [
+        319,
+        379
+      ],
+      "afterSamples": 5,
+      "diff": -1492,
+      "pct": -81.7982456140351
+    },
+    {
+      "metric": "run-20: JS heap after GC (1M points)",
+      "unit": "MB",
+      "method": "CDP JSHeapUsedSize after 2× forced GC (main thread only)",
+      "before": 77.6,
+      "beforeRange": [
+        77.6,
+        77.6
+      ],
+      "beforeSamples": 5,
+      "after": 74.2,
+      "afterRange": [
+        74.2,
+        74.2
+      ],
+      "afterSamples": 5,
+      "diff": -3.3999999999999915,
+      "pct": -4.381443298969061
+    },
+    {
+      "metric": "Zoom in, first click (new viewport)",
+      "unit": "ms",
+      "method": "Event Timing duration of the click (input → next paint)",
+      "before": 504,
+      "beforeRange": [
+        488,
+        520
+      ],
+      "beforeSamples": 5,
+      "after": 440,
+      "afterRange": [
+        400,
+        632
+      ],
+      "afterSamples": 5,
+      "diff": -64,
+      "pct": -12.698412698412698
+    },
+    {
+      "metric": "Zoom in, repeated clicks (viewport seen before)",
+      "unit": "ms",
+      "method": "Event Timing, clicks 2–5",
+      "before": 360,
+      "beforeRange": [
+        312,
+        424
+      ],
+      "beforeSamples": 20,
+      "after": 144,
+      "afterRange": [
+        112,
+        248
+      ],
+      "afterSamples": 20,
+      "diff": -216,
+      "pct": -60
+    },
+    {
+      "metric": "Reset zoom, first click (full range)",
+      "unit": "ms",
+      "method": "Event Timing duration of the click",
+      "before": 648,
+      "beforeRange": [
+        640,
+        680
+      ],
+      "beforeSamples": 5,
+      "after": 176,
+      "afterRange": [
+        176,
+        192
+      ],
+      "afterSamples": 5,
+      "diff": -472,
+      "pct": -72.8395061728395
+    },
+    {
+      "metric": "Reset zoom, repeated clicks",
+      "unit": "ms",
+      "method": "Event Timing, clicks 2–5",
+      "before": 528,
+      "beforeRange": [
+        496,
+        640
+      ],
+      "beforeSamples": 20,
+      "after": 128,
+      "afterRange": [
+        112,
+        224
+      ],
+      "afterSamples": 20,
+      "diff": -400,
+      "pct": -75.75757575757575
+    },
+    {
+      "metric": "Hover: processing per move (median)",
+      "unit": "ms",
+      "method": "pointermove input timestamp → end of dispatch",
+      "before": 11.7,
+      "beforeRange": [
+        10.6,
+        13
+      ],
+      "beforeSamples": 5,
+      "after": 12.2,
+      "afterRange": [
+        9.9,
+        12.8
+      ],
+      "afterSamples": 5,
+      "diff": 0.5,
+      "pct": 4.273504273504273
+    },
+    {
+      "metric": "Hover: input → next frame (median)",
+      "unit": "ms",
+      "method": "input timestamp → after next frame",
+      "before": 31.6,
+      "beforeRange": [
+        30,
+        32.3
+      ],
+      "beforeSamples": 5,
+      "after": 30.9,
+      "afterRange": [
+        27.6,
+        32.8
+      ],
+      "afterSamples": 5,
+      "diff": -0.7000000000000028,
+      "pct": -2.2151898734177307
+    },
+    {
+      "metric": "Hover: input → next frame (max)",
+      "unit": "ms",
+      "method": "worst of 30 moves",
+      "before": 121.5,
+      "beforeRange": [
+        113.6,
+        139.9
+      ],
+      "beforeSamples": 5,
+      "after": 122.2,
+      "afterRange": [
+        112.9,
+        141.3
+      ],
+      "afterSamples": 5,
+      "diff": 0.7000000000000028,
+      "pct": 0.5761316872428007
+    }
+  ],
+  "build": {
+    "baseline": [
+      {
+        "file": "index-CKRlA9W-.css",
+        "bytes": 22437,
+        "gzipBytes": 5351
+      },
+      {
+        "file": "index-Dx8W4fMz.js",
+        "bytes": 950060,
+        "gzipBytes": 317354
+      }
+    ],
+    "optimized": [
+      {
+        "file": "index-BYTBkZRo.css",
+        "bytes": 22461,
+        "gzipBytes": 5357
+      },
+      {
+        "file": "index-CDxWbky9.js",
+        "bytes": 370521,
+        "gzipBytes": 117566
+      },
+      {
+        "file": "run.worker-DebzaydO.js",
+        "bytes": 17031,
+        "gzipBytes": 6204
+      },
+      {
+        "file": "RunCharts-o4FLRz4A.js",
+        "bytes": 582453,
+        "gzipBytes": 200882
+      }
+    ]
+  }
+}

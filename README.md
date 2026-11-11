@@ -77,13 +77,15 @@ PW_CHANNEL=chrome npm run test:e2e    # or PW_CHANNEL=msedge
 │   │   │   ├── generators/      Seeded PRNG, metric curves, deterministic generateRun
 │   │   │   ├── integrity/       Validation, ordering, duplicates, gaps, chart view, summaries
 │   │   │   ├── repository/      RunRepository: lazy, cached access to runs
-│   │   │   └── serialization/   JSON codec that keeps NaN / ±Infinity / null distinct
+│   │   │   ├── serialization/   JSON codec that keeps NaN / ±Infinity / null distinct
+│   │   │   └── worker/          Web Worker job (generate + analyze) and lossless column transfer
 │   │   └── runs/
 │   │       ├── components/      Table, filters, status badge, metric cards, data quality, chart placeholder
-│   │       ├── data/            RunDataContext (repository + memoized analysis)
+│   │       ├── data/            RunDataContext, worker run loader (cancellable, cached)
 │   │       ├── hooks/           useRunAnalysis (stale-safe loading), useDocumentTitle
 │   │       ├── pages/           Runs list and run details pages
 │   │       └── format.ts, labels.ts, runListQuery.ts   Formatting, labels, list search/filter/sort
+│   ├── perf/                    User Timing instrumentation (trm:* measures in Chrome traces)
 │   ├── test/                    Test setup, render helpers, controlled repository, references
 │   ├── types/
 │   │   └── training.ts          Domain types (points, runs, summaries, diagnostics)
@@ -452,6 +454,30 @@ RunCharts (shared viewport state, ChartControls)
 - **Scale:** there is no log scale. Linear only, by choice: a log scale would need explicit handling of zero and negative values, and none of the metrics required it.
 - **Visual review:** automated checks cover geometry, markers, tooltips and overflow. Dark-mode rendering, screen-reader output and visual density at very large marker counts need manual review.
 
+## Reliability audit (Task 07)
+
+The full matrix (status, evidence, tests, limitations per risk) is in [docs/silent-failures-audit.md](docs/silent-failures-audit.md). In short:
+
+- **4 defects found and fixed:** the range form misread "5.000" as step 5; it also silently showed a different range when the request was outside the data; the tooltip headline presented a neighbouring step as the hovered one; and y-axis ticks printed identical labels for tiny ranges (run-20 lr).
+- **Clarity fixes:** dates are labelled UTC (they were already UTC-correct in every timezone), and the summary cards say they cover the whole run.
+- **Passed without changes:** request races (A → B → C in either completion order), superseded errors, unmounting, stale cache, error after success, smoothing/sampling, divergence, reset, linear-only axes and number formatting.
+- **Policies:**
+  - **Formatting is fixed to en-US** for all numbers, independent of the browser locale.
+  - **Dates are shown in UTC.**
+  - **Steps are not timestamps.**
+  - **Typed steps are whole numbers:** digit groups may use `,` or spaces, and a `.` is rejected rather than guessed.
+
+## Performance (Task 08)
+
+Full report, protocol and evidence: [docs/performance-report.md](docs/performance-report.md). Measured in Chrome 157 with 4× CPU throttling (DevTools Protocol), 5 repetitions per build, plus genuine Chrome traces in `docs/performance/`.
+
+- **Opening the million-point run:** main-thread blocking fell from 3,638 to 1,023 ms (−72%), and the longest task from 1,824 to 332 ms. Generation and analysis now run in a **Web Worker**, which returns lossless typed-array columns. Posting 1M objects would have cost ~1.8 s of main-thread deserialization.
+- **Runs list:** downloads 371 kB of JS instead of 950 kB, because the charts and ECharts are **lazy-loaded**.
+- **Charts:** each chart now downsamples once on load, not twice. A per-run model cache makes Reset/revisited zooms 73–76% faster. A leaner downsampling loop produces identical output.
+- **Caveat:** DevTools CPU throttling does not slow Web Workers, so the end-to-end load gains are overstated for slow devices; the report quantifies this. Hover was not a bottleneck and is unchanged. Zoom to a *new* viewport improved only 13%.
+
+Reproduce: `npm run build && node scripts/perf/measure.mjs <label> 5 && node scripts/perf/summarize.mjs baseline <label>`.
+
 ## Current implementation status
 
 **Task 01 (project foundation): complete.**
@@ -493,7 +519,11 @@ RunCharts (shared viewport state, ChartControls)
 - [x] ECharts upgraded to 6.1.0 (XSS advisory resolved)
 - [x] Unit/component tests, plus Chrome tests that measure the drawn SVG geometry
 
-Not implemented yet (later tasks): browser performance work (Web Worker, code splitting), deployment.
+**Task 07 (reliability audit): complete.** See [docs/silent-failures-audit.md](docs/silent-failures-audit.md).
+
+**Task 08 (performance): complete.** See [docs/performance-report.md](docs/performance-report.md).
+
+Not implemented yet (later tasks): deployment.
 
 ### Known notes
 

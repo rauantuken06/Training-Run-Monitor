@@ -64,6 +64,29 @@ describe('RunCharts on real runs', () => {
     for (const m of METRICS) expect(xRange(m)).toEqual([5_000, 6_000]);
   });
 
+  it('regression: rejects locale-ambiguous input ("5.000") instead of zooming to step 5', async () => {
+    const { user } = await openRun('run-01');
+    await user.type(screen.getByLabelText('From step'), '5.000');
+    await user.type(screen.getByLabelText('To step'), '6.000{Enter}');
+    expect(screen.getByRole('alert')).toHaveTextContent('From: "5.000": steps are whole numbers; write 5000 or 5,000 (not 5.000).');
+    expect(xRange('loss')).toEqual([0, 19_990]);
+  });
+
+  it('regression: trims a partly outside range (with a note) and rejects a range without data', async () => {
+    const { user } = await openRun('run-01');
+    await user.type(screen.getByLabelText('From step'), '19000');
+    await user.type(screen.getByLabelText('To step'), '25000{Enter}');
+    for (const m of METRICS) expect(xRange(m)).toEqual([19_000, 19_990]);
+    expect(screen.getByText("Adjusted to steps 19,000–19,990: this run's data covers 0–19,990.")).toBeInTheDocument();
+
+    await user.clear(screen.getByLabelText('From step'));
+    await user.clear(screen.getByLabelText('To step'));
+    await user.type(screen.getByLabelText('From step'), '30000');
+    await user.type(screen.getByLabelText('To step'), '40000{Enter}');
+    expect(screen.getByRole('alert')).toHaveTextContent('No data in steps 30,000–40,000; this run has steps 0–19,990.');
+    expect(xRange('loss')).toEqual([19_000, 19_990]); // unchanged, not silently moved
+  });
+
   it('zooms to a dragged pixel range (applied on release) and ignores tiny drags', async () => {
     await openRun('run-01');
     const plotWidth = width.value - GRID.left - GRID.right;

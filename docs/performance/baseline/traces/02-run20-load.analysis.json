@@ -1,0 +1,147 @@
+{
+ "file": "docs/performance/baseline/traces/02-run20-load.json.gz",
+ "mainThreadBusyMs": 4784,
+ "longTaskCount": 12,
+ "longTaskTotalMs": 4559.6,
+ "longTaskBreakdownTotalsMs": {
+  "gc": 254.4,
+  "styleLayout": 357.3,
+  "paint": 15.2,
+  "other": 1333.3,
+  "generate": 1088.4,
+  "analyze": 679.9,
+  "downsample": 826.6,
+  "option": 4.9
+ },
+ "longTasks": [
+  {
+   "startMs": 22.6,
+   "durationMs": 76.5,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 0.4,
+    "paint": 0,
+    "other": 76.1
+   }
+  },
+  {
+   "startMs": 110.9,
+   "durationMs": 210.6,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 210.6
+   }
+  },
+  {
+   "startMs": 337.2,
+   "durationMs": 177.4,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 1.3,
+    "paint": 0,
+    "other": 176.1
+   }
+  },
+  {
+   "startMs": 563.1,
+   "durationMs": 109.4,
+   "breakdown": {
+    "gc": 4.3,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 105.1
+   }
+  },
+  {
+   "startMs": 672.8,
+   "durationMs": 176.6,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 170.7,
+    "paint": 2.9,
+    "other": 3
+   }
+  },
+  {
+   "startMs": 850.2,
+   "durationMs": 59.8,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 59.9
+   }
+  },
+  {
+   "startMs": 978.2,
+   "durationMs": 2014.5,
+   "breakdown": {
+    "generate": 1088.4,
+    "analyze": 679.9,
+    "gc": 239.3,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 7
+   }
+  },
+  {
+   "startMs": 3001.6,
+   "durationMs": 593.5,
+   "breakdown": {
+    "downsample": 365.9,
+    "option": 3.3,
+    "gc": 3.3,
+    "styleLayout": 139.6,
+    "paint": 0,
+    "other": 81.4
+   }
+  },
+  {
+   "startMs": 3595.1,
+   "durationMs": 128.1,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 9.2,
+    "paint": 5.1,
+    "other": 113.9
+   }
+  },
+  {
+   "startMs": 3745.5,
+   "durationMs": 329.5,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 21.3,
+    "paint": 3.4,
+    "other": 304.9
+   }
+  },
+  {
+   "startMs": 4075.8,
+   "durationMs": 541.4,
+   "breakdown": {
+    "downsample": 460.7,
+    "option": 1.6,
+    "gc": 7.5,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 71.6
+   }
+  },
+  {
+   "startMs": 4618.2,
+   "durationMs": 142.3,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 14.8,
+    "paint": 3.8,
+    "other": 123.7
+   }
+  }
+ ],
+ "eventDispatch": {},
+ "workerThreads": [],
+ "workerPhases": []
+}

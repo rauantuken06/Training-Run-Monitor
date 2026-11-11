@@ -1,4 +1,5 @@
 import type { TrainingPoint, TrainingRun, TrainingRunMetadata } from '../../../types/training';
+import { timed } from '../../../perf/userTiming';
 import { RUN_DEFINITIONS } from '../catalog/runCatalog';
 import { generateRun } from '../generators/generateRun';
 import { runMetadata, type RunDefinition } from '../generators/runDefinition';
@@ -62,7 +63,7 @@ export function createRunRepository(options: RunRepositoryOptions = {}): RunRepo
       if (cached) return cached;
 
       const pending = Promise.resolve().then(() => {
-        const points = generate(entry.def);
+        const points = timed(`generate:${runId}`, () => generate(entry.def));
         generated.add(runId);
         return { ...entry.metadata, points };
       });

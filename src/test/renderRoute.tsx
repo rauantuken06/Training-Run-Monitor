@@ -4,6 +4,11 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 import { routes } from '../app/router';
 import { analyzeRunCached, RunDataContext, type RunData } from '../features/runs/data/runDataContext';
 import { runRepository } from '../features/data/repository/runRepository';
+// The run page lazy-loads its charts (Task 08 code splitting). Importing the chunk here
+// mirrors the page's own preload and evaluates the large ECharts module graph once,
+// outside individual tests' time budgets. Charts still appear asynchronously (Suspense),
+// so tests that need them use `findBy…`.
+import '../features/charts/components/RunCharts';
 
 /**
  * Render the real route table at `initialPath` using an in-memory router.

@@ -174,17 +174,27 @@ export function downsampleMetric(
 
     for (const seg of clipped) {
       const start = out.length;
+      // One record lookup per point. The previous form looked each record up twice
+      // through closures and computed the boundary point's bucket twice (Task 08 profile:
+      // downsampling dominated zoom). Same bucket expression, so identical output.
       let p = seg.start;
+      let bucket = bucketOf((points[displayIndex[p] as number] as TrainingPoint).step);
       while (p <= seg.end) {
-        const bucket = bucketOf(stepAt(p));
         const first = p;
         let minPos = p;
         let maxPos = p;
-        let minVal = valueAt(p);
+        let minVal = (points[displayIndex[p] as number] as TrainingPoint)[metric] as number;
         let maxVal = minVal;
+        let nextBucket = bucket;
         p++;
-        while (p <= seg.end && bucketOf(stepAt(p)) === bucket) {
-          const v = valueAt(p);
+        while (p <= seg.end) {
+          const record = points[displayIndex[p] as number] as TrainingPoint;
+          const b = bucketOf(record.step);
+          if (b !== bucket) {
+            nextBucket = b;
+            break;
+          }
+          const v = record[metric] as number;
           if (v < minVal) {
             minVal = v;
             minPos = p;
@@ -200,6 +210,7 @@ export function downsampleMetric(
           out.push(point);
           track(point);
         }
+        bucket = nextBucket;
       }
       outSegments.push({ start, end: out.length - 1 });
     }

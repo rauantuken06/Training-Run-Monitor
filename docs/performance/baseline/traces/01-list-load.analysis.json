@@ -1,0 +1,77 @@
+{
+ "file": "docs/performance/baseline/traces/01-list-load.json.gz",
+ "mainThreadBusyMs": 1191.7,
+ "longTaskCount": 6,
+ "longTaskTotalMs": 1064.4,
+ "longTaskBreakdownTotalsMs": {
+  "gc": 4.9,
+  "styleLayout": 223.3,
+  "paint": 9.1,
+  "other": 827.3
+ },
+ "longTasks": [
+  {
+   "startMs": 22.1,
+   "durationMs": 80.7,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 0.4,
+    "paint": 0,
+    "other": 80.3
+   }
+  },
+  {
+   "startMs": 129.7,
+   "durationMs": 216.7,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 216.8
+   }
+  },
+  {
+   "startMs": 353.1,
+   "durationMs": 269.2,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 269.2
+   }
+  },
+  {
+   "startMs": 635.4,
+   "durationMs": 206.1,
+   "breakdown": {
+    "gc": 4.9,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 201.2
+   }
+  },
+  {
+   "startMs": 841.9,
+   "durationMs": 235.2,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 222.9,
+    "paint": 9.1,
+    "other": 3.2
+   }
+  },
+  {
+   "startMs": 1078.3,
+   "durationMs": 56.5,
+   "breakdown": {
+    "gc": 0,
+    "styleLayout": 0,
+    "paint": 0,
+    "other": 56.6
+   }
+  }
+ ],
+ "eventDispatch": {},
+ "workerThreads": [],
+ "workerPhases": []
+}

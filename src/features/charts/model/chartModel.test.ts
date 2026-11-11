@@ -1,9 +1,51 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { loadFrozenRun } from '../../../test/integrityTestUtils';
+import { fixtureRun, loadFrozenRun, pt } from '../../../test/integrityTestUtils';
 import type { MetricKey, TrainingRun } from '../../../types/training';
 import { LARGE_RUN_SPIKE } from '../../data/catalog/runCatalog';
 import { analyzeRun, type ChartView } from '../../data/integrity/analyzeRun';
-import { budgetForWidth, buildChartModel, GRID, MAX_BUDGET, MIN_BUDGET, yBoundsFor } from './chartModel';
+import { formatFinite } from '../../runs/format';
+import { axisLabelDigits, budgetForWidth, buildChartModel, GRID, MAX_BUDGET, MIN_BUDGET, yBoundsFor } from './chartModel';
+
+describe('axisLabelDigits (distinct y-axis labels)', () => {
+  /** Tick values like ECharts places them: ~10 nice steps across the range. */
+  function ticks(min: number, max: number): number[] {
+    const raw = (max - min) / 10;
+    const pow = 10 ** Math.floor(Math.log10(raw));
+    const step = [1, 2, 5, 10].map((m) => m * pow).find((s) => s >= raw) ?? raw;
+    const out: number[] = [];
+    for (let v = Math.ceil(min / step) * step; v <= max; v += step) out.push(v);
+    return out;
+  }
+
+  it('regression: run-20 lr over 10 steps no longer prints identical tick labels', () => {
+    const view = get('run-20').view;
+    const model = buildChartModel(view, 'lr', { minStep: 500_000, maxStep: 500_010 }, 400);
+    const bounds = model.yBounds;
+    if (!bounds) throw new Error('no bounds');
+    const values = ticks(bounds.min, bounds.max);
+    expect(values.length).toBeGreaterThan(3);
+    // Premise of the bug: at the default 5 digits, labels collide.
+    expect(new Set(values.map((v) => formatFinite(v))).size).toBeLessThan(values.length);
+    const digits = axisLabelDigits(bounds);
+    expect(new Set(values.map((v) => formatFinite(v, digits))).size).toBe(values.length);
+  });
+
+  it('keeps the default 5 digits for ordinary ranges', () => {
+    expect(axisLabelDigits({ min: 1.7, max: 4.4 })).toBe(5);
+    expect(axisLabelDigits(null)).toBe(5);
+    expect(axisLabelDigits({ min: 0, max: 0 })).toBe(5);
+  });
+
+  it.each([
+    [1.000001, 1.000002],
+    [-3e-9, -2.9999e-9],
+    [123_456_789, 123_456_790],
+  ])('labels ticks in [%s, %s] distinctly', (min, max) => {
+    const digits = axisLabelDigits({ min, max });
+    const values = ticks(min, max);
+    expect(new Set(values.map((v) => formatFinite(v, digits))).size).toBe(values.length);
+  });
+});
 
 const views = new Map<string, { run: TrainingRun; view: ChartView }>();
 function get(id: string) {
@@ -81,6 +123,31 @@ describe('buildChartModel on real runs', () => {
     expect(model.yBounds?.min).toBeLessThanOrEqual(Math.min(...values));
     expect(model.yBounds?.max).toBeGreaterThanOrEqual(Math.max(...values));
     expect(Math.max(...values)).toBe(model.result.extrema.max?.value);
+  });
+
+  it('keeps a diverging run visibly divergent: the final blow-up is plotted and in range', () => {
+    const { run, view } = get('run-09');
+    const last = run.points.at(-1)?.loss as number;
+    for (const budget of [16, 64, 4_000]) {
+      const model = buildChartModel(view, 'loss', FULL, budget);
+      const flat = model.seriesData.flat();
+      expect(flat.at(-1)).toEqual([19_990, last]);
+      expect(model.result.extrema.max?.value).toBeGreaterThan(100);
+      expect(model.yBounds?.max).toBeGreaterThanOrEqual(model.result.extrema.max?.value ?? Infinity);
+    }
+  });
+
+  it('keeps zero and negative values representable on the linear axis', () => {
+    const view = analyzeRun(fixtureRun([pt(0, -2), pt(10, 0), pt(20, 3e-12), pt(30, -1e-300)])).view;
+    const model = buildChartModel(view, 'loss', { minStep: 0, maxStep: 30 }, 100);
+    expect(model.seriesData.flat()).toEqual([
+      [0, -2],
+      [10, 0],
+      [20, 3e-12],
+      [30, -1e-300],
+    ]);
+    expect(model.yBounds?.min).toBeLessThanOrEqual(-2);
+    expect(model.yBounds?.max).toBeGreaterThanOrEqual(3e-12);
   });
 
   it('has no line and no y-bounds when nothing finite is visible', () => {

@@ -1,7 +1,7 @@
 import { useState, type SyntheticEvent } from 'react';
 import type { Viewport } from '../../data/downsampling/downsample';
 import { formatCount } from '../../runs/format';
-import { isFullViewport, panViewport, zoomViewport, type StepExtent } from '../model/viewport';
+import { isFullViewport, panViewport, requestRange, zoomViewport, type StepExtent } from '../model/viewport';
 
 const buttonClass =
   'rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm font-medium text-slate-800 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800';
@@ -23,21 +23,23 @@ export function ChartControls({
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
 
   const applyRange = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const a = Number(from.replace(/,/g, ''));
-    const b = Number(to.replace(/,/g, ''));
-    if (from.trim() === '' || to.trim() === '' || !Number.isFinite(a) || !Number.isFinite(b)) {
-      setError('Enter two step numbers.');
-      return;
-    }
-    if (a >= b) {
-      setError('"From" must be smaller than "To".');
+    const request = requestRange(from, to, extent);
+    if (!request.ok) {
+      setError(request.error);
+      setNote(null);
       return;
     }
     setError(null);
-    onChange({ minStep: a, maxStep: b });
+    setNote(
+      request.adjusted
+        ? `Adjusted to steps ${formatCount(request.viewport.minStep)}–${formatCount(request.viewport.maxStep)}: this run's data covers ${formatCount(extent.min)}–${formatCount(extent.max)}.`
+        : null,
+    );
+    onChange(request.viewport);
   };
 
   return (
@@ -78,6 +80,11 @@ export function ChartControls({
         {error && (
           <p role="alert" className="text-sm text-red-700 dark:text-red-300">
             {error}
+          </p>
+        )}
+        {note && (
+          <p role="status" className="text-sm text-amber-800 dark:text-amber-300">
+            {note}
           </p>
         )}
       </form>

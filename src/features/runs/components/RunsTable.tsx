@@ -87,7 +87,7 @@ export function RunsTable({
             </th>
             <SortHeader label="Points" sortKey="points" query={query} onSort={onSort} align="right" />
             <th scope="col" className="px-3 py-2 text-left font-medium">
-              Created
+              Created (UTC)
             </th>
           </tr>
         </thead>
@@ -133,7 +133,9 @@ export function RunsTable({
                 </td>
                 <td className="px-3 py-2.5 text-right font-mono tabular-nums">{formatCount(run.pointCount)}</td>
                 <td className="px-3 py-2.5 whitespace-nowrap text-slate-700 dark:text-slate-300">
-                  <time dateTime={run.createdAt}>{formatDate(run.createdAt)}</time>
+                  <time dateTime={run.createdAt} title={run.createdAt}>
+                    {formatDate(run.createdAt)}
+                  </time>
                 </td>
               </tr>
             );

@@ -1,5 +1,53 @@
 import { describe, expect, it } from 'vitest';
-import { clampViewport, isFullViewport, panViewport, pixelToStep, zoomViewport } from './viewport';
+import { clampViewport, isFullViewport, panViewport, parseStepInput, pixelToStep, requestRange, zoomViewport } from './viewport';
+
+describe('parseStepInput (typed step numbers)', () => {
+  it.each([
+    ['5000', 5_000],
+    ['5,000', 5_000],
+    ['1,000,000', 1_000_000],
+    ['5 000', 5_000],
+    ['5 000', 5_000],
+    ['5 000', 5_000],
+    [' 42 ', 42],
+    ['0', 0],
+  ])('accepts %j as %i', (text, value) => {
+    expect(parseStepInput(text)).toEqual({ ok: true, value });
+  });
+
+  it.each(['5.000', '5000.7', '1,5', '12,34', '-10', 'abc', '', '5,000.5', '9'.repeat(20)])(
+    'regression: rejects %j instead of guessing',
+    (text) => {
+      expect(parseStepInput(text).ok).toBe(false);
+    },
+  );
+
+  it('explains why "5.000" is rejected', () => {
+    expect(parseStepInput('5.000')).toEqual({ ok: false, reason: '"5.000": steps are whole numbers; write 5000 or 5,000 (not 5.000).' });
+  });
+});
+
+describe('requestRange (typed range vs the data)', () => {
+  const extent = { min: 0, max: 19_990 };
+  it('applies a range inside the data unchanged', () => {
+    expect(requestRange('5,000', '6000', extent)).toEqual({ ok: true, viewport: { minStep: 5_000, maxStep: 6_000 }, adjusted: false });
+  });
+
+  it('regression: cuts a partly outside range down to the data instead of shifting it', () => {
+    expect(requestRange('19000', '25000', extent)).toEqual({ ok: true, viewport: { minStep: 19_000, maxStep: 19_990 }, adjusted: true });
+    expect(requestRange('0', '500', { min: 100, max: 900 })).toEqual({ ok: true, viewport: { minStep: 100, maxStep: 500 }, adjusted: true });
+  });
+
+  it('regression: rejects a range with no data instead of showing another range', () => {
+    expect(requestRange('30000', '40000', extent)).toEqual({ ok: false, error: 'No data in steps 30,000–40,000; this run has steps 0–19,990.' });
+  });
+
+  it('rejects reversed and malformed ranges', () => {
+    expect(requestRange('6000', '5000', extent)).toEqual({ ok: false, error: '"From" must be smaller than "To".' });
+    expect(requestRange('5.000', '6000', extent).ok).toBe(false);
+    expect(requestRange('5000', '', extent).ok).toBe(false);
+  });
+});
 
 const EXTENT = { min: 0, max: 19_990 };
 

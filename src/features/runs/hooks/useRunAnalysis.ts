@@ -32,12 +32,15 @@ function yieldToBrowser(): Promise<void> {
  *   quickly therefore cannot show the previous run's data.
  * - Analysis happens once per load, in the effect, not during render, so
  *   unrelated re-renders never re-analyze.
- * - Note: `getRun` returns a Promise, but generation and analysis are
- *   synchronous work on the main thread. The yield lets the loading state paint
- *   first; it does not stop the UI from blocking while the work runs.
+ * - With `loadRun` (the app default when Web Workers exist), generation and
+ *   analysis run in a worker; leaving the run cancels that job (the worker is
+ *   terminated). Only decoding the transferred result runs on the main thread.
+ * - Without `loadRun` (tests that supply a repository), `getRun` + `analyze` run
+ *   on the main thread: `getRun` returns a Promise, but that work is synchronous
+ *   and blocks the UI while it runs. The yield lets the loading state paint first.
  */
 export function useRunAnalysis(runId: string): { state: RunAnalysisState; retry: () => void } {
-  const { repository, analyze } = useRunData();
+  const { repository, analyze, loadRun } = useRunData();
   const [state, setState] = useState<RunAnalysisState>({ status: 'loading', runId });
   const [attempt, setAttempt] = useState(0);
 
@@ -45,20 +48,29 @@ export function useRunAnalysis(runId: string): { state: RunAnalysisState; retry:
     let active = true;
     // Read through a function: `active` is flipped by the cleanup below, after an `await`.
     const isActive = () => active;
+    let cancelJob: (() => void) | null = null;
     setState({ status: 'loading', runId });
 
     void (async () => {
       await yieldToBrowser();
       if (!isActive()) return;
       try {
-        const run = await repository.getRun(runId);
+        let loaded: { run: TrainingRun; analysis: RunIntegrity } | undefined;
+        if (loadRun) {
+          const job = loadRun.load(runId);
+          cancelJob = job.cancel;
+          loaded = await job.promise;
+        } else {
+          const run = await repository.getRun(runId);
+          if (!isActive()) return;
+          loaded = run ? { run, analysis: analyze(run) } : undefined;
+        }
         if (!isActive()) return;
-        if (!run) {
+        if (!loaded) {
           setState({ status: 'not_found', runId });
           return;
         }
-        const analysis = analyze(run);
-        if (isActive()) setState({ status: 'ready', runId, run, analysis });
+        setState({ status: 'ready', runId, run: loaded.run, analysis: loaded.analysis });
       } catch (error: unknown) {
         if (isActive()) setState({ status: 'error', runId, error });
       }
@@ -66,8 +78,9 @@ export function useRunAnalysis(runId: string): { state: RunAnalysisState; retry:
 
     return () => {
       active = false;
+      cancelJob?.();
     };
-  }, [repository, analyze, runId, attempt]);
+  }, [repository, analyze, loadRun, runId, attempt]);
 
   const retry = useCallback(() => {
     setAttempt((n) => n + 1);

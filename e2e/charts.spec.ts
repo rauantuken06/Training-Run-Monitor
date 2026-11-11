@@ -56,7 +56,8 @@ async function hoverStep(page: Page, metric: string, step: number) {
   const x = box.x + GRID.left + ((step - g.xMin) / (g.xMax - g.xMin)) * (box.width - GRID.left - GRID.right);
   await page.mouse.move(x, box.y + box.height / 2);
 }
-const tooltip = (page: Page) => page.locator('div').filter({ hasText: /^Step / }).last();
+// The headline is "Step S" for an exact hover, or "Cursor: …" otherwise (Task 07 tooltip fix).
+const tooltip = (page: Page) => page.locator('div').filter({ hasText: /^(Step |Cursor: )/ }).last();
 
 async function openRun(page: Page, id: string) {
   await page.goto(`/runs/${id}`);

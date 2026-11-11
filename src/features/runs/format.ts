@@ -28,14 +28,18 @@ function trimZeros(text: string): string {
 }
 
 /**
- * Finite numbers at 5 significant digits. Values below 1e-3 or at least 1e5 in
- * magnitude use scientific notation, so small learning rates stay readable.
+ * Finite numbers at `significantDigits` significant digits (default 5). Values
+ * below 1e-3 or at least 1e5 in magnitude use scientific notation, so small
+ * learning rates stay readable. A nonzero value is never shown as "0".
+ * Uses `toPrecision`/`toExponential`, so the output does not depend on the
+ * browser locale ("." decimal separator everywhere).
  */
-export function formatFinite(value: number): string {
+export function formatFinite(value: number, significantDigits = 5): string {
   if (value === 0) return Object.is(value, -0) ? '-0' : '0';
+  const digits = Math.min(17, Math.max(1, Math.round(significantDigits)));
   const magnitude = Math.abs(value);
-  if (magnitude >= 1e-3 && magnitude < 1e5) return trimZeros(value.toPrecision(5));
-  return trimZeros(value.toExponential(4));
+  if (magnitude >= 1e-3 && magnitude < 1e5) return trimZeros(value.toPrecision(digits));
+  return trimZeros(value.toExponential(digits - 1));
 }
 
 export function describeValue(value: MetricValue): DescribedValue {
