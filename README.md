@@ -69,6 +69,7 @@ PW_CHANNEL=chrome npm run test:e2e    # or PW_CHANNEL=msedge
 │   │   ├── data/
 │   │   │   ├── catalog/         The 20 run definitions (metadata + declared anomalies)
 │   │   │   ├── generators/      Seeded PRNG, metric curves, deterministic generateRun
+│   │   │   ├── integrity/       Validation, ordering, duplicates, gaps, chart view, summaries
 │   │   │   ├── repository/      RunRepository: lazy, cached access to runs
 │   │   │   └── serialization/   JSON codec that keeps NaN / ±Infinity / null distinct
 │   │   └── runs/
@@ -90,7 +91,6 @@ Later tasks will add these folders. They are not created yet, to avoid empty pla
 ```
 src/features/runs/components/       list table, filters, sort controls
 src/features/charts/components/     ECharts wrappers
-src/features/data/integrity/        validation and DataQualityDiagnostics
 src/features/data/downsampling/     spike-preserving downsampling
 src/hooks/  src/utils/
 ```
@@ -98,11 +98,12 @@ src/hooks/  src/utils/
 ### Type design (`src/types/training.ts`)
 
 - `MetricValue = number | null`. A finite number is a normal reading. `NaN` and `±Infinity` are kept exactly as recorded. `null` means the value was not recorded. Values are never coerced to `0`.
-- `TrainingRunMetadata` holds everything about a run except its points: ID, name, description, status, config, `scenarios` and the exact `pointCount`. It is cheap to list. `TrainingRun` extends it with `points`.
+- `TrainingRunMetadata` holds everything about a run except its points: ID, name, description, status, config, `scenarios`, the exact `pointCount`, and the declared `sampling` (`{ kind: 'fixed', interval }` or `{ kind: 'irregular' }`). It is cheap to list. `TrainingRun` extends it with `points`.
 - `TrainingRun.points` holds the raw points in the order received. They may be unsorted, duplicated or have gaps.
-- `DataQualityIssue` is a discriminated union on `kind`: `nan`, `positive_infinity`, `negative_infinity`, `missing_value`, `duplicate_step`, `unsorted_step`, `missing_steps` or `invalid_step`. Each kind carries the step, index and metric details it needs.
-- `DataQualityDiagnostics` aggregates per-metric value counts, per-kind issue counts and the full issue list.
-- `RunSummary` / `MetricSummary` compute `min` and `max` over finite values only (`null` if there are none). `last` keeps the raw last value, so a run that ends in `NaN` stays visible.
+- `ValueKind` classifies a metric value as `finite`, `nan`, `positive_infinity`, `negative_infinity` or `missing`.
+- `DataQualityIssue` is a discriminated union on `kind`: `invalid_step`, `unsorted_step`, `duplicate_step`, `missing_steps`, `off_grid_step`, `nan`, `positive_infinity`, `negative_infinity`, `missing_value` and `non_finite_tail`. Every issue about a specific record carries its `sourceIndex` in the raw array.
+- `DataQualityDiagnostics` aggregates the counts, per-kind issue counts and the full issue list.
+- `MetricSummary` holds safe statistics (see [Summary rules](#summary-rules)).
 
 ## Synthetic dataset
 
@@ -180,6 +181,89 @@ Unless noted, runs have 2,000 points at steps 0–19,990 (every 10 steps).
 - **`-0`** would come back as `0` from the codec (plain JSON behaviour). The generator never produces `-0`.
 - **Curves** are simple parametric shapes (exponential decay, warmup plus cosine decay, log-normal noise) that resemble real training curves. They are not fitted to real runs.
 
+## Data integrity engine
+
+`src/features/data/integrity/` turns a raw run into diagnostics, a chart-ready view and safe summaries. It is made of pure functions only: no ECharts, no React, no caching. The input is never mutated. Tests run it on deeply frozen points, so any write would throw.
+
+```
+analyzeRun({ id, sampling, points })                          analyzeRun.ts
+ ├─ buildStepOrder(points)       invalid steps, unsorted records,      stepOrder.ts
+ │                               ascending display index, duplicates
+ ├─ findMissingSteps(...)        gaps and off-grid steps,             missingSteps.ts
+ │                               from the declared sampling
+ ├─ buildMetricView(...) ×3      continuous segments, non-finite      metricView.ts
+ │                               positions
+ ├─ summarizeMetric(...) ×3      safe statistics                      summary.ts
+ └─ diagnostics                  every issue, with its source index
+→ { diagnostics, view, summaries }
+```
+
+### Validation rules
+
+- **Values** (`classifyValue`): a metric value is valid only if it is a finite number. `NaN`, `+Infinity`, `-Infinity` and `null` (not recorded) are four separate kinds and are never merged. Each invalid or missing value in every raw record produces one issue with its metric, step and `sourceIndex`. No value is ever converted to 0, clamped, interpolated or dropped.
+- **Steps** (`isValidStep`): a step must be a finite, non-negative integer. Records with any other step (`NaN`, `±Infinity`, negative, fractional) can't be placed on an axis. They are left out of the display view and reported as `invalid_step` issues; their values still count in `counts`.
+- **Order:** a record whose step is lower than the previous valid-step record's is reported as `unsorted_step`. The display view sorts numerically by step (ties by source index). It never sorts lexicographically, and it never reorders the source array.
+
+### Duplicate-step policy
+
+When several records share a step, **the display view shows the last one recorded** (the highest source index), and nothing is averaged or merged.
+
+- The rationale: when a logger writes a step again (a retry, or a re-run after resuming), the later write is usually the one that replaced the earlier. The rule is fixed and doesn't depend on values, so it is deterministic and easy to explain.
+- Every duplicate produces a `duplicate_step` issue. It holds all the original records (by reference), their `sourceIndices`, which one is displayed, and the `conflictingMetrics`: the metrics whose values differ, compared with `Object.is`, so `NaN` equals `NaN` but `NaN` ≠ `null`. With no conflicting metrics the duplicate is identical (severity `info`); otherwise it conflicts (severity `warning`).
+- Hidden copies still count: `counts`, `min` and `max` include them, so an extreme value in a hidden copy is never concealed. Its `sourceIndex` shows where it came from.
+
+### Missing-step policy
+
+- Detection uses the **declared** `sampling` in the run metadata. It never infers spacing from the data, and it never assumes steps go up by 1. Catalog runs declare `{ kind: 'fixed', interval }` from their definitions, for example 10 for runs 01–19 and 1 for run-20.
+- Under `fixed` sampling, the expected grid is `firstStep + k × interval`. Every grid step strictly between two present steps is missing and is reported as one `missing_steps` range (first/last missing step and count).
+- A step that isn't on the grid is reported as `off_grid_step`. It never creates a false gap, because gaps count only grid steps.
+- `irregular` sampling reports no missing steps at all. That avoids false gaps for intentionally sparse logging, but it also means a real outage in an irregular run goes undetected.
+- Nothing is reported before the first or after the last present step; the expected start and end of a run aren't declared.
+- An invalid declared interval (0, negative, fractional) throws instead of being guessed.
+- Missing **steps** (no record at all) and missing **values** (`null` in a record) are separate issue kinds.
+
+### Chart-ready view (`ChartView`)
+
+- `displayIndex: Uint32Array` maps each display position (strictly ascending step, one per distinct valid step) to a source index in the raw points. It is the only large structure built; values are read through `stepAt` / `valueAt` from the original objects, so they are never copied.
+- `metrics[m].segments`: a line may be drawn only inside a segment, a maximal range of finite values with no missing steps between them. Invalid values, `null`s and gaps always end a segment, so nothing is drawn across them.
+- `metrics[m].nonFinite` lists each non-finite displayed position and its kind. `gaps` and `duplicates` carry their display positions and issues.
+- Nothing is smoothed, interpolated or downsampled. For Task 04: downsampling can work per segment, keep the per-bucket min and max (which preserves the run-20 spike), and keep every `nonFinite`, `gaps` and `duplicates` entry as an explicit marker. The view is plain data plus a typed array, so it can be passed to a Web Worker.
+
+### Summary rules
+
+| Field | Scope | Rule |
+| --- | --- | --- |
+| `counts` (`finite`, `nan`, `positiveInfinity`, `negativeInfinity`, `missing`) | every raw record | always sums to the record count |
+| `invalidCount` | every raw record | `nan + positiveInfinity + negativeInfinity` (`missing` is separate) |
+| `min`, `max` | finite values on records with valid steps, including hidden duplicate copies | `{ value, step, sourceIndex }`, or `null` if there are no finite values; ties keep the first in source order |
+| `firstFinite`, `lastFinite` | display view | first/last finite value by step, or `null` |
+| `last` | display view | the raw value at the highest step, with its kind; may be `NaN`, `±Infinity` or `null` |
+| `endsNonFinite` | display view | `true` if `last` is not finite |
+
+A run that ends invalid is never hidden: `last` shows the raw value, `endsNonFinite` is set, and a `non_finite_tail` issue (severity `error`) records where the trailing invalid stretch begins and how long it is. Empty and all-invalid runs return `null` statistics and zero counts; nothing is invented.
+
+### Measured cost
+
+Measured in Node 24.13.1 on this Windows dev machine, by bundling with esbuild and running with `node --expose-gc`, 3 fresh processes. These are Node numbers; browser numbers haven't been measured.
+
+- **run-20 (1,000,000 records):** `analyzeRun` took 200, 212, 256 ms (3 runs). The result retained 3.8 MB of ArrayBuffer memory (the `displayIndex`) plus 0.2 MB of JS heap. No per-metric copies are made.
+- **run-15 and run-19 (about 2,000 records each):** 6–7 ms.
+
+### Known information-loss risks
+
+- **Duplicates:** the chart shows one value per step. Conflicting copies are visible only through diagnostics and the duplicate markers, not as separate points.
+- **Invalid steps:** records with invalid steps are left out of the view, and their finite values are left out of `min`/`max`. They are reported and counted, but not plotted.
+- **Missing-step range:** missing steps before the first or after the last record are not detected. Irregular sampling disables gap detection entirely.
+- **Off-grid steps** are displayed, but they skew the expected grid only if the *first* step is off-grid (the grid is anchored there).
+- **Issue volume:** there is one issue object per invalid value. A run with millions of invalid values would produce millions of issue objects.
+
+### Limitations not covered by automated tests
+
+- Browser timing and memory (only Node was measured), and Web Worker transfer, which isn't implemented.
+- Real-world log formats: the tests use the synthetic catalog plus hand-made and randomized fixtures.
+- The randomized tests cover up to 60 records per case, with steps up to a few hundred; very large steps (beyond 2^53) aren't tested.
+- Whether "last recorded wins" is the right display choice for a specific team's logging setup is a product decision, not something tests can prove.
+
 ## Current implementation status
 
 **Task 01 (project foundation): complete.**
@@ -196,7 +280,12 @@ Unless noted, runs have 2,000 points at steps 0–19,990 (every 10 steps).
 - [x] Lazy, cached `RunRepository`; JSON codec that keeps invalid-value semantics
 - [x] Unit tests for every requirement (see `src/features/data/**/*.test.ts`)
 
-Not implemented yet (later tasks): wiring data into the UI, data integrity checks and normalization, charts, downsampling, sorting and filtering, zoom and hover, performance work, deployment.
+**Task 03 (data integrity engine): complete.**
+
+- [x] Pure `analyzeRun` that validates values and steps, applies the duplicate policy, detects missing steps, and builds a chart-ready index view and safe summaries
+- [x] Unit tests on the real datasets, edge-case fixtures, and 400 seeded randomized property cases
+
+Not implemented yet (later tasks): wiring data into the UI, charts, downsampling, sorting and filtering, zoom and hover, performance work, deployment.
 
 ### Known notes
 
