@@ -1,6 +1,7 @@
 import { Link, useLocation, useParams } from 'react-router';
 import { paths } from '../../../app/paths';
 import type { MetricKey, TrainingRunMetadata } from '../../../types/training';
+import { RunCharts } from '../../charts/components/RunCharts';
 import { ChartPlaceholder } from '../components/ChartPlaceholder';
 import { DataQualitySummary } from '../components/DataQualitySummary';
 import { MetricSummaryCard } from '../components/MetricSummaryCard';
@@ -142,16 +143,25 @@ function RunDetails({ metadata }: { metadata: TrainingRunMetadata }) {
 
       {state.status === 'ready' && <DataQualitySummary diagnostics={state.analysis.diagnostics} />}
 
-      <section aria-labelledby="charts-heading" className="space-y-3">
-        <h2 id="charts-heading" className="text-lg font-semibold">
-          Charts
-        </h2>
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          {METRICS.map((m) => (
-            <ChartPlaceholder key={m} id={`chart-${m}`} title={METRIC_LABEL[m]} />
-          ))}
-        </div>
-      </section>
+      {state.status === 'ready' ? (
+        <RunCharts key={state.runId} view={state.analysis.view} />
+      ) : (
+        <section aria-labelledby="charts-heading" className="space-y-3">
+          <h2 id="charts-heading" className="text-lg font-semibold">
+            Charts
+          </h2>
+          <div className="grid grid-cols-1 gap-4">
+            {METRICS.map((m) => (
+              <ChartPlaceholder
+                key={m}
+                id={`chart-${m}`}
+                title={METRIC_LABEL[m]}
+                message={state.status === 'loading' ? 'Chart appears once the run data has loaded.' : 'No chart: the run data could not be loaded.'}
+              />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

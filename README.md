@@ -18,7 +18,7 @@ The finished application will:
 | Build      | Vite 6                                          |
 | Styling    | Tailwind CSS 4 (`@tailwindcss/vite`)            |
 | Routing    | React Router 7                                  |
-| Charts     | Apache ECharts 5 + `echarts-for-react` (installed, not used yet) |
+| Charts     | Apache ECharts 6.1 (tree-shaken, SVG renderer) + `echarts-for-react` |
 | Unit tests | Vitest 4, React Testing Library, happy-dom      |
 | E2E tests  | Playwright                                      |
 | Linting    | ESLint 9 (flat config) + `typescript-eslint` strict type-checked |
@@ -66,6 +66,11 @@ PW_CHANNEL=chrome npm run test:e2e    # or PW_CHANNEL=msedge
 │   ├── components/
 │   │   └── layout/              App shell (header, nav, main) and 404 page
 │   ├── features/
+│   │   ├── charts/
+│   │   │   ├── components/      RunCharts, TrainingMetricChart, ChartControls, ChartStatus, ChartAccessibilitySummary
+│   │   │   ├── hooks/           useElementWidth, usePrefersDark
+│   │   │   ├── model/           Pure chart model: budget, viewport math, hover text, ECharts option
+│   │   │   └── echarts.ts       Tree-shaken ECharts registration
 │   │   ├── data/
 │   │   │   ├── catalog/         The 20 run definitions (metadata + declared anomalies)
 │   │   │   ├── downsampling/    Viewport-aware, extrema-preserving downsampling (segment-aware M4)
@@ -74,7 +79,7 @@ PW_CHANNEL=chrome npm run test:e2e    # or PW_CHANNEL=msedge
 │   │   │   ├── repository/      RunRepository: lazy, cached access to runs
 │   │   │   └── serialization/   JSON codec that keeps NaN / ±Infinity / null distinct
 │   │   └── runs/
-│   │       ├── components/      Table, filters, status badge, metric cards, data quality, chart placeholders
+│   │       ├── components/      Table, filters, status badge, metric cards, data quality, chart placeholder
 │   │       ├── data/            RunDataContext (repository + memoized analysis)
 │   │       ├── hooks/           useRunAnalysis (stale-safe loading), useDocumentTitle
 │   │       ├── pages/           Runs list and run details pages
@@ -94,7 +99,6 @@ PW_CHANNEL=chrome npm run test:e2e    # or PW_CHANNEL=msedge
 Later tasks will add these folders. They are not created yet, to avoid empty placeholders:
 
 ```
-src/features/charts/components/     ECharts wrappers
 src/hooks/  src/utils/
 ```
 
@@ -345,7 +349,7 @@ The spike was kept in every measured result. **Memory:** the heap retained by on
 - **Run details (`/runs/:runId`)**: name, status, ID, description, total observations, creation date, declared scenarios and configuration appear immediately, from metadata. Then:
   - three metric cards (loss, lr, grad_norm)
   - the data quality report
-  - three labelled chart placeholders, with stable heights and no drawn content
+  - three interactive charts (see [Charts](#charts-task-06)); labelled placeholders keep the layout stable while data loads
 - An unknown ID shows "Run not found" without requesting any data.
 
 ### Where the numbers come from
@@ -381,6 +385,73 @@ The spike was kept in every measured result. **Memory:** the heap retained by on
 - **Dark mode:** styled, but not screenshot-checked.
 - **Bundle size:** the JS bundle grew from 320.80 kB to 365.18 kB (115.54 kB gzipped) because the UI now includes the data layer.
 
+## Charts (Task 06)
+
+### Architecture
+
+```
+RunCharts (shared viewport state, ChartControls)
+ └─ TrainingMetricChart ×3 (loss, lr, grad_norm)
+     ├─ useElementWidth → budgetForWidth(width) = 4 × plot-width px (clamped 16…20,000)
+     ├─ buildChartModel(view, metric, viewport, budget)   ← Task 04 downsampleMetric, nothing else
+     ├─ buildEChartsOption(model, theme, tooltipFormatter)
+     ├─ ChartStatus (warnings) · role="img" chart with text name · ChartAccessibilitySummary
+     └─ ReactEChartsCore (one ECharts instance per chart; option updates with notMerge, no re-init)
+```
+
+- `src/features/charts/model/` is pure, with no React. It only arranges what `downsampleMetric` returns, so every plotted coordinate is an existing record's exact `(step, value)`. Summary numbers on the page still come from Task 03.
+- **When downsampling runs:** the model is memoized on (run view, metric, viewport, budget), so downsampling reruns only on zoom, pan, reset or a width change. Hover and drag movement only read the existing model; a test spies on `downsampleMetric` during 100+ pointer moves and tooltip calls and confirms no extra call. The integrity analysis is never rerun (it comes from Task 05's `useRunAnalysis`).
+- **One viewport for all three charts:** zooming any chart or using the controls zooms all of them. A newly opened run starts at its full range (the charts are keyed by run ID).
+
+### Rendering policy (truthfulness)
+
+- **One ECharts line series per downsampled segment.** A line can only connect consecutive points of one segment, so it never bridges `NaN`, `±Infinity`, `null` or a missing step. This doesn't rely on `connectNulls`; the Chrome tests count the drawn line paths (run-11: 4, run-17: 4, run-19: 4) and they equal the segment count.
+- **Fidelity settings:** `smooth: false`, no `sampling` setting, `connectNulls: false` and `animation: false`, plus linear value axes only. A one-point segment, such as an isolated value between two NaNs, is drawn as a symbol so it stays visible.
+- **Axes:** the x-axis is the step (labels like `1,000,000`; integer viewport bounds; `minInterval: 1`). The y-axis spans the **exact viewport extrema** plus 5% padding, so nothing can be clipped. Each side is padded independently, so values near ±`Number.MAX_VALUE` never collapse the axis. The padded ends are not labelled, because they aren't data values. Labels use the same 5-significant-digit format as the tooltips and cards, so `3e-5` stays `3e-5`, never `0`. Locale and number formatting are fixed (`en-US`); no dates are involved.
+- **Invalid values (no y-coordinate):**
+  - never drawn as points
+  - a single invalid step is a dashed red vertical line, and a stretch is a red band, labelled with text: `NaN`, `+Inf`, `-Inf`, `null`, `NaN ×600`
+  - **missing steps:** a grey band labelled `gap ×N`
+  - **conflicting duplicates:** a ▲ rug along the bottom edge at each step; the plotted value is the displayed (last-recorded) copy, and the hover shows all values
+  - all of these come from the downsampler's reports for the whole viewport, so a marker never disappears because its neighbours weren't sampled
+  - each chart also lists its warnings in text above it. Markers are capped at 100 per kind (the text says when), and labels are hidden when more than 24 markers would crowd the plot
+- **Plot area:** fixed margins with `outerBoundsMode: 'none'`. ECharts 6's default layout shifted the plot by ~16 px in Chrome, which would have made both the drawn spike position and the drag-to-zoom mapping wrong; the browser geometry tests caught it.
+
+### Zoom and hover
+
+- **Mouse:** drag horizontally across a chart to zoom into that step range. A selection band follows the drag, and the zoom (and downsampling) happens once, on release. Drags under 6 px are ignored. Wheel zoom is deliberately not used, so it can't hijack page scrolling.
+- **Keyboard:** Zoom in (½ span), Zoom out (2×), Pan left/right (¼ span), Reset zoom, and an exact **From/To step** form. A polite live region announces "Showing steps A–B of C–D".
+- **Tooltips:**
+  - show the plotted observation nearest the cursor, with its exact step and value (exact digits added when rounding changed them), plus warnings for conflicting duplicates, nearby invalid stretches and a gap under the cursor
+  - when the line is downsampled, they say "N of M observations plotted; zoom in to see every one", so the line isn't presented as containing every observation
+  - the cursor step is tracked in the capture phase, because ECharts reports the nearest data point's x as `axisValue`; using it hid gaps under the cursor (found in Chrome, now covered by a regression test)
+  - all tooltip text is HTML-escaped
+
+### Spike evidence (run-20, step 500,123, loss 42.5)
+
+- **Unit and component tests:** the spike is in the drawn series data at full range for widths of 390–1,920 px, and after zooming to spans from 500,000 down to 0 steps at five positions. The y-axis maximum is always ≥ 42.5. A viewport starting one step after the spike neither draws it nor scales for it.
+- **Chrome (Playwright, SVG geometry):** a drawn vertex sits at the exact pixel computed from the axis model for (500,123, 42.5): **0 px** distance at 390, 820 and 1,280 px wide, at full range and zoomed to 300 and 20 steps. The hover tooltip reads "Step 500,123 / Loss: 42.5".
+
+### Rendering limits found in the browser
+
+- zrender (ECharts' renderer) merges consecutive line vertices that lie within 2 device pixels of the previous vertex in **both** x and y, keeping the farthest one. A large jump like the spike always survives. In one measurement at 390 px, the run-20 minimum was drawn 0.7 px from its exact position (0.52 px at 820 px); after the margin change it measured 0 px at all three widths. This is not configurable through ECharts' public options.
+- Hover precision is limited by pixels: when one pixel spans several steps, the tooltip shows the observation nearest the cursor. To hover one specific step, zoom until steps are a few pixels apart.
+- At wide zoom levels a single-step break, for example at one NaN, can be narrower than a pixel. The labelled marker and the warning text make it visible.
+
+### Accessibility
+
+- **Charts:** each chart is a named region ("Loss chart"; the summary cards keep "Loss") holding a `role="img"` element. Its accessible name is a text summary: visible step range, plotted vs total observations, and min/max with steps. The same summary is shown as visible text, and warnings are text lists. Markers carry text labels, so color is never the only cue.
+- **Controls:** all zoom controls are native buttons and labelled inputs with visible focus. Disabled states reflect the limits, for example Reset is disabled at the full range.
+- **Theme:** colors follow `prefers-color-scheme`. The dark theme is defined but has not been screenshot-checked.
+
+### Known limitations
+
+- **Bundle:** the JS bundle is **947.24 kB (316.30 kB gzipped)**, up from 365.19 kB, because ECharts ships in the main chunk; the runs list doesn't need it. Lazy-loading the charts is left for the performance task.
+- **Main thread:** opening run-20 still blocks it for about 0.45 s (Task 05 measurement). Each zoom on run-20 reruns `downsampleMetric` for three metrics (Node: about 19 ms each at full range; browser cost not profiled).
+- **Touch:** touch users zoom with the buttons and the range form; touch dragging scrolls the page by design.
+- **Scale:** there is no log scale. Linear only, by choice: a log scale would need explicit handling of zero and negative values, and none of the metrics required it.
+- **Visual review:** automated checks cover geometry, markers, tooltips and overflow. Dark-mode rendering, screen-reader output and visual density at very large marker counts need manual review.
+
 ## Current implementation status
 
 **Task 01 (project foundation): complete.**
@@ -415,7 +486,14 @@ The spike was kept in every measured result. **Memory:** the heap retained by on
 - [x] Loading, error (with retry), unknown-run and empty states; stale-response protection
 - [x] Unit/component tests on real data, plus Playwright tests in Chrome (desktop and mobile)
 
-Not implemented yet (later tasks): charts, zoom and hover, browser performance work (Web Worker), deployment.
+**Task 06 (charts): complete.**
+
+- [x] Loss, lr and grad_norm charts from Task 04 downsampling: one series per segment, exact extrema, labelled invalid/gap/duplicate markers
+- [x] Shared zoom: drag-to-zoom, keyboard buttons, exact range form, reset; tooltips at the real cursor position
+- [x] ECharts upgraded to 6.1.0 (XSS advisory resolved)
+- [x] Unit/component tests, plus Chrome tests that measure the drawn SVG geometry
+
+Not implemented yet (later tasks): browser performance work (Web Worker, code splitting), deployment.
 
 ### Known notes
 
@@ -433,9 +511,10 @@ Not implemented yet (later tasks): charts, zoom and hover, browser performance w
 
 Both are dev-only test tooling. No production dependency was changed.
 
-**Remaining (8 moderate, 0 high, 0 critical):**
+**Task 06:** `echarts` 5.6.0 → 6.1.0 fixes [GHSA-fgmj-fm8m-jvvx](https://github.com/advisories/GHSA-fgmj-fm8m-jvvx) (XSS, moderate), the only production finding. `echarts-for-react` 3.0.6, the latest, declares `echarts: "^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0"`, so the upgrade stays within its supported range. It was verified by the build, the unit tests and Chrome rendering. Tooltip HTML is built only from escaped text (`escapeHtml`), never from raw strings.
+
+**Remaining (7 moderate, 0 high, 0 critical), all dev-only:**
 
 | Package | Scope | Advisory | Why it remains |
 | --- | --- | --- | --- |
-| `echarts` 5.6.0 (direct) | **Production** | [GHSA-fgmj-fm8m-jvvx](https://github.com/advisories/GHSA-fgmj-fm8m-jvvx), XSS (CWE-79, CVSS 6.1), fixed in 6.1.0 | Fixing it needs a major upgrade. No code uses ECharts yet, so nothing is exposed today. `echarts-for-react` 3.0.6 accepts `^6.0.0`, so upgrading before the charting task is the recommended path. Until then, never pass untrusted HTML into chart options (for example tooltip `formatter` or rich text). |
 | `minimatch` 10.2.6 (via `@typescript-eslint/typescript-estree`) | Dev (lint only) | [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249), ReDoS via glob patterns | `typescript-eslint` 8.72.2 is the latest release and requires `minimatch ^10.2.2`. The audit "fix" would *downgrade* `typescript-eslint` to 8.36.0. Exposure is limited to glob patterns written in our own ESLint config. The other 6 findings are the `@typescript-eslint/*` packages listed only because they depend on this `minimatch`. |
