@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useUrlBackedText } from '../hooks/useUrlBackedText';
 import { SCENARIO_LABEL, STATUS_LABEL } from '../labels';
 import {
   hasActiveFilters,
@@ -47,6 +48,9 @@ export function RunFilters({
   onChange: (patch: Partial<RunListQuery>) => void;
   onClear: () => void;
 }) {
+  const [searchText, setSearchText] = useUrlBackedText(query.search, (search) => {
+    onChange({ search });
+  });
   return (
     <form
       role="search"
@@ -61,9 +65,9 @@ export function RunFilters({
           id="run-search"
           type="search"
           placeholder="Run name or ID"
-          value={query.search}
+          value={searchText}
           onChange={(e) => {
-            onChange({ search: e.target.value });
+            setSearchText(e.target.value);
           }}
           className={controlClass}
         />

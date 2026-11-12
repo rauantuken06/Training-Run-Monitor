@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { getDefinition, samePoints } from '../../../test/dataTestUtils';
 import { createRunRepository } from '../../data/repository/runRepository';
 import { generateRun } from '../../data/generators/generateRun';
 import { runJob, type RunJobRequest, type RunJobResponse } from '../../data/worker/runJob';
-import { createWorkerRunLoader, RunLoadCancelledError, type WorkerLike } from './workerRunLoader';
+import { createWorkerRunLoader, RunLoadCancelledError, WORKER_TIMEOUT_MS, type WorkerLike } from './workerRunLoader';
 
 /** A Worker stand-in that runs the real job code when the test says so. */
 class FakeWorker implements WorkerLike {
@@ -93,6 +93,34 @@ describe('createWorkerRunLoader', () => {
     expect(workers).toHaveLength(2);
     workers[1]?.respond();
     await expect(retry.promise).resolves.toBeDefined();
+  });
+
+  it('regression: a worker that never answers is terminated after the timeout, and Retry can succeed', async () => {
+    vi.useFakeTimers();
+    try {
+      FakeWorker.all = [];
+      const loader = createWorkerRunLoader(createRunRepository(), () => new FakeWorker(), 5_000);
+      const job = loader.load('run-17');
+      const rejection = expect(job.promise).rejects.toThrow('Run worker did not respond within 5 s');
+      vi.advanceTimersByTime(4_999);
+      expect(FakeWorker.all[0]?.terminated).toBe(false);
+      vi.advanceTimersByTime(1);
+      await rejection;
+      expect(FakeWorker.all[0]?.terminated).toBe(true);
+      expect(FakeWorker.all[0]?.onmessage).toBeNull(); // a very late answer is ignored
+
+      const retry = loader.load('run-17'); // not cached: a new worker
+      expect(FakeWorker.all).toHaveLength(2);
+      FakeWorker.all[1]?.respond();
+      vi.advanceTimersByTime(10_000); // the answered job's watchdog was cleared
+      await expect(retry.promise).resolves.toBeDefined();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('uses a 60 s default timeout', () => {
+    expect(WORKER_TIMEOUT_MS).toBe(60_000);
   });
 
   it('turns a worker crash into a rejection', async () => {

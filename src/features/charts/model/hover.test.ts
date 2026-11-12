@@ -43,7 +43,9 @@ describe('hover: exact observation vs nearest plotted observation', () => {
     expect(out[1]).toBe('Nearest plotted observation: step 500,123 (in this pixel)');
     expect(out[2]).toBe('Loss: 42.5');
     expect(out.at(-1)).toMatch(/^Downsampled: [\d,]+ of 1,000,000 observations plotted/);
-  });
+    // Builds and analyzes 1M points in the test body: ~3 s idle, exceeded the 5 s default under
+    // CPU load in Task 09 QA (5.8 s). Only the time limit is raised; assertions are unchanged.
+  }, 30_000);
 
   it('handles the viewport boundaries (cursor clamped to the first/last step)', () => {
     const s = setup('run-01');

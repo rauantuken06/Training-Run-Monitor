@@ -115,13 +115,20 @@ test('regression: hovering inside a gap names the cursor step, then the nearest 
 test('zooming away from NaNs and resetting brings their markers back; a diverging run stays divergent', async ({ page }) => {
   await openRun(page, 'run-12');
   const texts = () => page.getByTestId('metric-chart-loss').evaluate((el) => [...el.querySelectorAll('svg text')].map((t) => t.textContent ?? ''));
-  expect(await texts()).toContain('NaN ×600');
+  // The chart draws on the next animation frame (ECharts lazyUpdate), so the <svg> can exist
+  // before anything is drawn in it: poll instead of reading once (Task 09: Edge read [] once).
+  // 'drawn' requires axis labels, so an empty frame cannot satisfy the 'marker gone' check.
+  const markers = async () => {
+    const t = await texts();
+    return { drawn: t.some((s) => /^[\d,]+$/.test(s)), nanMarker: t.includes('NaN ×600') };
+  };
+  await expect.poll(markers).toEqual({ drawn: true, nanMarker: true });
   await applyRange(page, '0', '5000');
   await expect(page.getByTestId('metric-chart-loss')).toHaveAttribute('data-x-max', '5000');
-  expect(await texts()).not.toContain('NaN ×600');
+  await expect.poll(markers).toEqual({ drawn: true, nanMarker: false });
   await page.getByRole('button', { name: 'Reset zoom' }).click();
   await expect(page.getByTestId('metric-chart-loss')).toHaveAttribute('data-x-max', '19990');
-  expect(await texts()).toContain('NaN ×600');
+  await expect.poll(markers).toEqual({ drawn: true, nanMarker: true });
 
   await openRun(page, 'run-09');
   const yMax = Number(await page.getByTestId('metric-chart-loss').getAttribute('data-y-max'));

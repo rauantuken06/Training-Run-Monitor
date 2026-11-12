@@ -19,7 +19,9 @@ export interface ChartTheme {
 export const LIGHT_THEME: ChartTheme = {
   line: '#0369a1',
   text: '#475569',
-  axis: '#94a3b8',
+  // Axis lines are graphical objects needed to read the chart (WCAG 1.4.11 needs ≥ 3:1).
+  // Was #94a3b8 (2.56:1 on white); slate-500 gives 4.76:1. Found in the Task 09 audit.
+  axis: '#64748b',
   split: '#e2e8f0',
   invalid: '#b91c1c',
   invalidBand: 'rgba(220, 38, 38, 0.14)',

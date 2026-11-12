@@ -478,6 +478,21 @@ Full report, protocol and evidence: [docs/performance-report.md](docs/performanc
 
 Reproduce: `npm run build && node scripts/perf/measure.mjs <label> 5 && node scripts/perf/summarize.mjs baseline <label>`.
 
+## Final QA (Task 09)
+
+Full matrix, evidence and remaining risks: [docs/final-qa-report.md](docs/final-qa-report.md). Screenshots, memory data and e2e logs are in [docs/qa/](docs/qa/).
+
+- **Fixed (each with a regression test):**
+  - Fast typing in the search box dropped characters, because the input followed the asynchronously updated URL.
+  - Light-theme chart axis lines were below WCAG 1.4.11 contrast (2.56:1, now 4.76:1).
+  - A run worker that never answered left the page loading forever. It now times out after 60 s and offers Retry.
+- **Accessibility:** axe (WCAG 2.0–2.2 A/AA) finds 0 violations in light and dark mode. Chart contrast, focus visibility, keyboard order and reflow at 320/640 px were also checked by hand. This is not a certification: **no screen reader was tested** (none installed).
+- **Browsers:** the full e2e suite passes in Chrome, Edge and Playwright's Firefox (`PW_BROWSER=firefox npm run test:e2e`).
+  - Firefox runs with 2 workers and longer axe time limits, because axe is slow there.
+  - Six axe rules are skipped on one Firefox state, because they crash Playwright's Firefox. The report documents this.
+  - Safari and real mobile devices are untested.
+- **Memory (Chrome 157, run-20 open):** the tab's renderer uses about 125 MB private memory (peak while loading: about 225 MB); the JS heap is 74.9 MB. Measure with `npm run build && node scripts/perf/tab-memory.mjs` (Windows only).
+
 ## Current implementation status
 
 **Task 01 (project foundation): complete.**
@@ -522,6 +537,8 @@ Reproduce: `npm run build && node scripts/perf/measure.mjs <label> 5 && node scr
 **Task 07 (reliability audit): complete.** See [docs/silent-failures-audit.md](docs/silent-failures-audit.md).
 
 **Task 08 (performance): complete.** See [docs/performance-report.md](docs/performance-report.md).
+
+**Task 09 (final QA): complete.** See [docs/final-qa-report.md](docs/final-qa-report.md).
 
 Not implemented yet (later tasks): deployment.
 

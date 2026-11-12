@@ -6,6 +6,14 @@ import { analyzeRun, type ChartView } from '../../data/integrity/analyzeRun';
 import { formatFinite } from '../../runs/format';
 import { axisLabelDigits, budgetForWidth, buildChartModel, GRID, MAX_BUDGET, MIN_BUDGET, yBoundsFor } from './chartModel';
 
+/**
+ * Tests that generate and analyze the 1,000,000-point run inside the test body take
+ * ~3 s on an idle machine and exceeded Vitest's 5 s default under CPU load (Task 09 QA:
+ * 6.3 s while other applications used 61% CPU). Only the time limit is raised; no
+ * assertion changes.
+ */
+const HEAVY_TEST_TIMEOUT_MS = 30_000;
+
 describe('axisLabelDigits (distinct y-axis labels)', () => {
   /** Tick values like ECharts places them: ~10 nice steps across the range. */
   function ticks(min: number, max: number): number[] {
@@ -28,7 +36,7 @@ describe('axisLabelDigits (distinct y-axis labels)', () => {
     expect(new Set(values.map((v) => formatFinite(v))).size).toBeLessThan(values.length);
     const digits = axisLabelDigits(bounds);
     expect(new Set(values.map((v) => formatFinite(v, digits))).size).toBe(values.length);
-  });
+  }, HEAVY_TEST_TIMEOUT_MS);
 
   it('keeps the default 5 digits for ordinary ranges', () => {
     expect(axisLabelDigits({ min: 1.7, max: 4.4 })).toBe(5);

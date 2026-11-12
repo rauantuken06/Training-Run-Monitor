@@ -1,0 +1,112 @@
+{
+  "chrome": "157.0.8103.52",
+  "method": "Windows Win32_Process counters of the tab renderer process (page + worker), identified via CDP SystemInfo.getProcessInfo; after 2× forced GC",
+  "date": "2026-11-12T04:32:42.090Z",
+  "runs": [
+    {
+      "rendererPid": 13360,
+      "cpuSecondsDuringRun20Load": 1.818048,
+      "list": {
+        "privateMB": 29.4,
+        "peakPrivateMB": 33.3,
+        "workingSetMB": 79.9,
+        "peakWorkingSetMB": 81.5,
+        "jsHeapMB": 2.5
+      },
+      "run20": {
+        "privateMB": 122.9,
+        "peakPrivateMB": 222.9,
+        "workingSetMB": 186.1,
+        "peakWorkingSetMB": 284.4,
+        "jsHeapMB": 74.9,
+        "liveWorkersAfterLoad": 0
+      },
+      "otherNewRenderers": {
+        "26208": {
+          "cpuSecondsDuringRun20Load": 0.0001250000000000001,
+          "privateMB": 17.4,
+          "peakPrivateMB": 17.4,
+          "workingSetMB": 32.8,
+          "peakWorkingSetMB": 32.8
+        },
+        "29880": {
+          "cpuSecondsDuringRun20Load": 0.0008420000000000094,
+          "privateMB": 30.3,
+          "peakPrivateMB": 30.3,
+          "workingSetMB": 66.1,
+          "peakWorkingSetMB": 66.1
+        }
+      }
+    },
+    {
+      "rendererPid": 32680,
+      "cpuSecondsDuringRun20Load": 1.937725,
+      "list": {
+        "privateMB": 31.9,
+        "peakPrivateMB": 35.4,
+        "workingSetMB": 82.4,
+        "peakWorkingSetMB": 84.5,
+        "jsHeapMB": 2.5
+      },
+      "run20": {
+        "privateMB": 123.9,
+        "peakPrivateMB": 224.4,
+        "workingSetMB": 187.4,
+        "peakWorkingSetMB": 286,
+        "jsHeapMB": 74.9,
+        "liveWorkersAfterLoad": 0
+      },
+      "otherNewRenderers": {
+        "23824": {
+          "cpuSecondsDuringRun20Load": 0.00007799999999999474,
+          "privateMB": 17.4,
+          "peakPrivateMB": 17.4,
+          "workingSetMB": 32.9,
+          "peakWorkingSetMB": 32.9
+        },
+        "32664": {
+          "cpuSecondsDuringRun20Load": 0.0009020000000000139,
+          "privateMB": 31.8,
+          "peakPrivateMB": 31.8,
+          "workingSetMB": 66.3,
+          "peakWorkingSetMB": 66.3
+        }
+      }
+    },
+    {
+      "rendererPid": 27024,
+      "cpuSecondsDuringRun20Load": 1.863048,
+      "list": {
+        "privateMB": 29,
+        "peakPrivateMB": 32.5,
+        "workingSetMB": 79.7,
+        "peakWorkingSetMB": 81.7,
+        "jsHeapMB": 2.5
+      },
+      "run20": {
+        "privateMB": 127.7,
+        "peakPrivateMB": 225.3,
+        "workingSetMB": 190.8,
+        "peakWorkingSetMB": 286.2,
+        "jsHeapMB": 74.8,
+        "liveWorkersAfterLoad": 0
+      },
+      "otherNewRenderers": {
+        "18232": {
+          "cpuSecondsDuringRun20Load": 0.0009860000000000146,
+          "privateMB": 31.8,
+          "peakPrivateMB": 31.8,
+          "workingSetMB": 66.2,
+          "peakWorkingSetMB": 66.2
+        },
+        "32996": {
+          "cpuSecondsDuringRun20Load": 0.00007999999999999674,
+          "privateMB": 14.7,
+          "peakPrivateMB": 14.7,
+          "workingSetMB": 30.3,
+          "peakWorkingSetMB": 30.3
+        }
+      }
+    }
+  ]
+}

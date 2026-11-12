@@ -39,10 +39,17 @@ function defaultCreateWorker(): WorkerLike {
  *   policy as the repository's cache. Failed or cancelled jobs are not cached.
  * - Worker errors (posted errors and crashes) reject the promise, which the UI shows
  *   as its error state.
+ * - A worker that never answers (e.g. its script request hangs) is terminated after
+ *   `timeoutMs` and the job rejects, so the page cannot sit on "Loading…" forever.
+ *   Found in the Task 09 QA run: one Chrome e2e run left pages loading for 30+ s with
+ *   no error. The default is far above the slowest measured job (~2 s at 4x throttling).
  */
+export const WORKER_TIMEOUT_MS = 60_000;
+
 export function createWorkerRunLoader(
   repository: Pick<RunRepository, 'getRunMetadata'>,
   createWorker: () => WorkerLike = defaultCreateWorker,
+  timeoutMs: number = WORKER_TIMEOUT_MS,
 ): RunLoader {
   const cache = new Map<string, Promise<LoadedRun | undefined>>();
   let nextJobId = 1;
@@ -58,8 +65,10 @@ export function createWorkerRunLoader(
       const jobId = nextJobId++;
       let settled = false;
       let rejectJob: (error: unknown) => void = () => undefined;
+      let watchdog: ReturnType<typeof setTimeout> | undefined;
       const finish = () => {
         settled = true;
+        clearTimeout(watchdog);
         worker.onmessage = null;
         worker.onerror = null;
         worker.terminate();
@@ -85,6 +94,10 @@ export function createWorkerRunLoader(
           finish();
           reject(new Error(`Run worker crashed: ${event.message || 'unknown error'}`));
         };
+        watchdog = setTimeout(() => {
+          finish();
+          reject(new Error(`Run worker did not respond within ${Math.round(timeoutMs / 1000)} s`));
+        }, timeoutMs);
         worker.postMessage({ jobId, runId });
       });
 
