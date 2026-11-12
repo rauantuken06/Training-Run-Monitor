@@ -4,6 +4,8 @@ Date: 2026-11-12. Machine: Windows 11 Pro, Chrome 157 (157.0.8103.39 for most ru
 
 > **Note (Task 10):** the files in [qa/logs/](qa/logs/) were overwritten by the final Task 10 verification runs. Those runs include the new production smoke tests, so their counts are higher than the Task 09 counts below (for example Chrome 86 passed instead of 76). `e2e-firefox-rerun.log` is the Task 09 Firefox run with 4 workers, which had 6 failures (section 3). Final results: [test-evidence.md](test-evidence.md).
 
+> **Production (Task 10):** the app is deployed at https://training-run-monitor-gold.vercel.app/ (commit `20654d3`). The production smoke test (12 tests, Chrome desktop + Pixel 7 emulation) passed with 1 worker, in a run by the candidate and in an independent rerun by the AI agent. With 4 workers it passed once (candidate, no log saved) and failed 3 of 12 once with timeouts ([production-smoke-vercel.log](qa/logs/production-smoke-vercel.log)). That instability is **not fixed** and its cause is **not confirmed**. Edge, Firefox, Safari and real devices were not tested against production. The QA checks in this report (axe, keyboard, reflow, contrast) ran against the local production build, not the live URL. Details: [test-evidence.md](test-evidence.md#production-smoke-test-on-the-live-vercel-deployment).
+
 Status values: **PASS** (checked, no defect), **FIXED** (defect found in Task 09 and fixed, with a regression test), **FAIL** (open defect), **UNVERIFIED** (not checked, or only partly checked; the reason is given).
 
 An automated axe scan is **not** an accessibility certification. axe finds a subset of WCAG failures. The manual checks below cover more, but no assistive-technology user testing was done, and no screen reader was available on this machine.
@@ -102,7 +104,7 @@ These are OS process counters, not Chrome's "Memory footprint" (a different acco
 
 **Non-blockers (known, documented):**
 
-1. The SPA rewrite for deep links is required at deployment time (Task 10).
+1. The SPA rewrite for deep links is required at deployment time. Since Task 10 it is in `vercel.json`, and it has been checked on the live deployment (see the Task 10 note at the top).
 2. No screen reader, real-device, Safari or forced-colours testing.
 3. The Firefox axe workaround leaves six rules unchecked on one state, in Firefox only.
 4. Heavy unit tests are sensitive to machine load (time limits raised, assertions unchanged).

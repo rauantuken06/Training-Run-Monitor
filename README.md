@@ -495,6 +495,23 @@ Full matrix, evidence and remaining risks: [docs/final-qa-report.md](docs/final-
 
 ## Deployment (Task 10)
 
+### Production deployment and verification
+
+- **Production URL:** https://training-run-monitor-gold.vercel.app/
+- **Deployed commit:** `20654d3` on `main` (confirmed by the candidate in the Vercel dashboard). The later commit `d2a798b` only adds test logs, so the application source is identical. The deployed JavaScript files have the same content-hashed names as a local build of this source (`index-DaVtcVt0.js`, `RunCharts-CvB9KPLL.js`).
+- **Smoke test:** `PW_BASE_URL=https://training-run-monitor-gold.vercel.app PW_CHANNEL=chrome npx playwright test e2e/production-smoke.spec.ts`, with 12 tests: desktop Chrome and Pixel 7 emulation.
+
+| Run | Who ran it | Result | Log |
+| --- | --- | --- | --- |
+| Parallel, 4 workers (first run) | Candidate | 12 passed, 0 failed, 28.6 s | none saved (user-reported) |
+| Parallel, 4 workers (rerun) | Candidate | **9 passed, 3 failed**, 2.0 min | [production-smoke-vercel.log](docs/qa/logs/production-smoke-vercel.log) |
+| Sequential, `--workers=1 --reporter=line` | Candidate | 12 passed, 0 failed, 1.4 min (per the log) | [production-smoke-sequential.log](docs/qa/logs/production-smoke-sequential.log) |
+| Sequential, `--workers=1 --reporter=line` | AI agent (independent rerun) | 12 passed, 0 failed, 1.3 min | [production-smoke-agent-sequential.log](docs/qa/logs/production-smoke-agent-sequential.log) |
+
+**Known limitation:** with 4 parallel workers, the smoke test against production timed out intermittently (loading the million-point chart, the mobile navigation test, and a static asset request). The cause is **not confirmed**, and nothing has been changed to fix it. Only Chrome was tested against production; Edge, Firefox, Safari and real phones were not. Details: [docs/test-evidence.md](docs/test-evidence.md#production-smoke-test-on-the-live-vercel-deployment).
+
+### Configuration
+
 The app is a static single-page application, so any static host works. The repository is set up for **Vercel** through [vercel.json](vercel.json):
 
 - **Settings:** framework `vite`, build command `npm run build`, output folder `dist`.
@@ -513,7 +530,7 @@ Final test results, logs and skip reasons: [docs/test-evidence.md](docs/test-evi
 **Verify a deployment** with the production smoke test. It needs no local server:
 
 ```bash
-PW_BASE_URL=https://<your-deployment>.vercel.app PW_CHANNEL=chrome npx playwright test e2e/production-smoke.spec.ts
+PW_BASE_URL=https://training-run-monitor-gold.vercel.app PW_CHANNEL=chrome npx playwright test e2e/production-smoke.spec.ts --workers=1
 ```
 
 The smoke test checks:
@@ -523,7 +540,7 @@ The smoke test checks:
 - the NaN and ±Infinity markers
 - mobile layout (Pixel 7 project) and console errors
 
-**Local check of the routing rules (no Vercel account needed):** the production build was served by a small local server. It follows Vercel's documented routing order (file first, then the first matching rewrite) and compiles `vercel.json` with `path-to-regexp` 6. The smoke test passed there in Chrome, Edge and Firefox. This is an emulation: real Vercel behaviour is only confirmed by running the smoke test against the deployed URL.
+**Before deployment, a local check of the routing rules:** the production build was served by a small local server that follows Vercel's documented routing order (file first, then the first matching rewrite) and compiles `vercel.json` with `path-to-regexp` 6. The smoke test passed there in Chrome, Edge and Firefox. Real Vercel routing has since been checked on the live URL (above).
 
 ## Current implementation status
 
@@ -572,9 +589,9 @@ The smoke test checks:
 
 **Task 09 (final QA): complete.** See [docs/final-qa-report.md](docs/final-qa-report.md).
 
-**Task 10 (deployment and submission): configuration ready; not deployed yet.** See [Deployment](#deployment-task-10) and [docs/final-report.md](docs/final-report.md).
+**Task 10 (deployment and submission): deployed.** See [Deployment](#deployment-task-10) and [docs/final-report.md](docs/final-report.md).
 
-Deployment: configured (`vercel.json`), awaiting a verified public URL.
+Deployment: https://training-run-monitor-gold.vercel.app/ (commit `20654d3`). The production smoke test passes with 1 worker; it was intermittent with 4 workers (see [Production deployment and verification](#production-deployment-and-verification)).
 
 ### Known notes
 

@@ -1,0 +1,10 @@
+# Run by the AI agent, 2026-11-12 09:11 UTC: curl -s -o /dev/null -w '%{http_code} %{content_type}' https://training-run-monitor-gold.vercel.app<path>
+/                                    200 text/html; charset=utf-8
+/?status=failed&quality=nan_loss     200 text/html; charset=utf-8
+/runs/run-01                         200 text/html; charset=utf-8
+/runs/run-20                         200 text/html; charset=utf-8
+/runs/nope                           200 text/html; charset=utf-8
+/does-not-exist/deeper               200 text/html; charset=utf-8
+/assets/index-DaVtcVt0.js            200 application/javascript; charset=utf-8
+/assets/RunCharts-CvB9KPLL.js        200 application/javascript; charset=utf-8
+/assets/does-not-exist-0000.js       404 text/plain; charset=utf-8

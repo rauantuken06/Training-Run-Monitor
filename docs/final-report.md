@@ -1,6 +1,6 @@
 # Training Run Monitor: final report
 
-**Repository:** `[REPOSITORY URL: to be confirmed]` · **Live app:** `[DEPLOYED URL: not deployed yet; fill in after the smoke test passes on it]` · Soup Frontend Engineer take-home, November 2026
+**Repository:** https://github.com/rauantuken06/Training-Run-Monitor · **Live app:** https://training-run-monitor-gold.vercel.app/ (Vercel, commit `20654d3`) · Soup Frontend Engineer take-home, November 2026
 
 ## Overview and approach
 
@@ -31,9 +31,9 @@ Summary with real output and skip reasons: `docs/test-evidence.md`.
 | e2e Firefox (Playwright build, desktop) | 46 passed, 1 skipped¹, 0 failed | `docs/qa/logs/e2e-firefox.log` |
 | axe WCAG 2.0–2.2 A/AA, light and dark | 0 violations in every tested state | `e2e/final-qa.spec.ts`, `docs/final-qa-report.md` |
 | `npm audit` | production deps: 0; dev-only: 7 moderate (lint tooling) | `docs/qa/logs/npm-audit.log` |
-| Production smoke test (routing emulated as on Vercel) | Chrome 12/12, Edge 12/12, Firefox 6/6 | `e2e/production-smoke.spec.ts` |
+| Smoke test on the **live URL**, Chrome + Pixel 7 (12 tests) | 1 worker: 12/12 (candidate), 12/12 (agent). 4 workers: 12/12, then **9/12**⁴ | `docs/qa/logs/production-smoke-*.log` |
 
-¹ Intentional skips: desktop-only keyboard and mouse-hover tests on the mobile project, and the missing-asset 404 check, which only applies to a deployment (`vite preview` serves `index.html` for every path). Key tests: the spike's drawn SVG vertex lies within 0.5 px of (500,123, 42.5) at full range and zoomed, and an exact hover shows "Step 500,123 · Loss: 42.5"; 400 seeded randomized integrity cases and 300 randomized downsampling cases; request races (A → B → C); 40 responsive screenshots in `docs/qa/screenshots/`.
+⁴ Timeouts; cause unconfirmed, not fixed. ¹ Intentional skips: desktop-only keyboard and mouse-hover tests on the mobile project, and the missing-asset 404 check, which only applies to a deployment (`vite preview` serves `index.html` for every path). Key tests: the spike's drawn SVG vertex lies within 0.5 px of (500,123, 42.5) at full range and zoomed, and an exact hover shows "Step 500,123 · Loss: 42.5"; 400 seeded randomized integrity cases and 300 randomized downsampling cases; request races (A → B → C); 40 responsive screenshots in `docs/qa/screenshots/`.
 
 ## Performance (Task 08, measured)
 
@@ -72,18 +72,18 @@ Also checked with no defect found: request races, stale cache, error after succe
 - **Checked by hand:** WCAG contrast of every chart colour, a visible 2 px focus outline on every Tab stop, a logical keyboard order, and reflow at 320 and 640 px (no sideways scrolling).
 - **Gaps:** in Firefox, six axe rules are skipped on one state (they crash Playwright's Firefox build). Not tested: screen readers (none installed), real browser zoom, forced colours, Safari, real phones. **This is not an accessibility certification.**
 
-## Verdict: SHIP (once the deployed URL passes the smoke test)
+## Verdict: SHIP (deployed; production smoke test passes with 1 worker)
 
 - **Data integrity and visual correctness:** the strongest areas. Each guarantee above is enforced by tests, and the spike is checked against the pixels actually drawn.
 - **Reliability:** no open defects. Every failure path shows a visible error with Retry.
 - **Performance:** the 1M-point run no longer freezes the page (longest task 332 ms at 4× throttling).
-- **Acceptable limitations:** zooming to a new viewport still takes about 440 ms at 4× throttling; no screen-reader, Safari or real-device testing yet; some heavy tests are sensitive to machine load.
+- **Acceptable limitations:** zooming to a new viewport still takes about 440 ms at 4× throttling; no screen-reader, Safari or real-device testing yet; some heavy tests are sensitive to machine load; the production smoke test times out intermittently with 4 workers.
 - **Priorities:** (1) a screen-reader pass (NVDA or VoiceOver); (2) move downsampling to the worker or pre-aggregate at several resolutions, to speed up zoom; (3) Safari and real devices; (4) a shorter worker timeout or a progress signal.
 
 ## AI tool usage and human verification
 
-- **Tool:** **Claude Code** (Anthropic's coding agent, in VS Code; Claude Opus 5.5 in the final sessions) wrote most of the code, tests, scripts and documentation, and ran every command and browser check reported here. `[QUESTION FOR CANDIDATE: were any other AI tools used (e.g. Copilot, ChatGPT)? If so, name them here.]`
-- **Candidate's role** (as recorded in the session): wrote the ten task specifications and their acceptance criteria; chose Vitest 4 with a Windows drive-letter wrapper over Vitest 5; set the Git workflow (work on `main`, commit and push only with approval) and merged the pull requests. The agent committed only when asked.
+- **Tool:** **Claude Code** (Anthropic's coding agent, in VS Code; Claude Opus 5.5 in the final sessions) wrote most of the code, tests, scripts and documentation, and ran every command and browser check reported here, except the candidate's three production smoke runs. `[QUESTION FOR CANDIDATE: were any other AI tools used (e.g. Copilot, ChatGPT)? If so, name them here.]`
+- **Candidate's role** (as recorded in the session): wrote the ten task specifications and their acceptance criteria; chose Vitest 4 with a Windows drive-letter wrapper over Vitest 5; set the Git workflow (work on `main`, commit and push only with approval) and merged the pull requests; deployed to Vercel and ran the first three production smoke tests. The agent committed only when asked.
 - **Rejected or changed:** `npm audit fix --force` was rejected (it would have jumped to Vitest 5). Measurements overturned some of the agent's first ideas: posting a million point objects from the worker cost about 1.8 s, so typed arrays are used; an early "0 axe violations" was not trusted until manual contrast checks found the axis-line failure.
 - **Executed:** all test counts and measurements above come from commands that were actually run; the logs are in `docs/qa/logs/`.
 - **Personally reviewed by the candidate:** `[QUESTION FOR CANDIDATE: which diffs, screenshots or app behaviour did you review or try yourself? Do not leave this blank.]`

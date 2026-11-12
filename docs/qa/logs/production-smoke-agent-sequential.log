@@ -1,0 +1,19 @@
+$ PW_BASE_URL=https://training-run-monitor-gold.vercel.app PW_CHANNEL=chrome npx playwright test e2e/production-smoke.spec.ts --workers=1 --reporter=line
+# Run by the AI agent, 2026-11-12 09:09 UTC, Windows 11, git HEAD d2a798b
+
+Running 12 tests using 1 worker
+
+[1/12] [chromium] › e2e\production-smoke.spec.ts:40:1 › direct navigation and browser refresh work on every kind of URL
+[2/12] [chromium] › e2e\production-smoke.spec.ts:63:1 › static assets are served as JavaScript files
+[3/12] [chromium] › e2e\production-smoke.spec.ts:72:1 › deployment: a missing asset is a real 404, not the app page
+[4/12] [chromium] › e2e\production-smoke.spec.ts:81:1 › the runs list shows all 20 runs
+[5/12] [chromium] › e2e\production-smoke.spec.ts:88:1 › million-point run: the spike at step 500,123 (loss 42.5) is in range, zooms and hovers exactly
+[6/12] [chromium] › e2e\production-smoke.spec.ts:121:1 › NaN and ±Infinity are shown as labelled warnings, not plotted values
+[7/12] [mobile-chromium] › e2e\production-smoke.spec.ts:40:1 › direct navigation and browser refresh work on every kind of URL
+[8/12] [mobile-chromium] › e2e\production-smoke.spec.ts:63:1 › static assets are served as JavaScript files
+[9/12] [mobile-chromium] › e2e\production-smoke.spec.ts:72:1 › deployment: a missing asset is a real 404, not the app page
+[10/12] [mobile-chromium] › e2e\production-smoke.spec.ts:81:1 › the runs list shows all 20 runs
+[11/12] [mobile-chromium] › e2e\production-smoke.spec.ts:88:1 › million-point run: the spike at step 500,123 (loss 42.5) is in range, zooms and hovers exactly
+[12/12] [mobile-chromium] › e2e\production-smoke.spec.ts:121:1 › NaN and ±Infinity are shown as labelled warnings, not plotted values
+  12 passed (1.3m)
+exit=0
