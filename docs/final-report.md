@@ -1,93 +1,81 @@
-# Training Run Monitor: final report
+# Training Run Monitor
 
-**Repository:** https://github.com/rauantuken06/Training-Run-Monitor · **Live app:** https://training-run-monitor-gold.vercel.app/ (Vercel, commit `20654d3`) · Soup Frontend Engineer take-home, November 2026
+<p class="sub">Frontend Engineer take-home submission | November 2026</p>
 
-## Overview and approach
+## Project and architecture
 
-The app shows a training-run dashboard for 20 deterministic synthetic runs (loss, `lr`, `grad_norm`), including one run with **1,000,000 points and a single spike at step 500,123 (loss 42.5)**. The guiding rule: the chart must never look cleaner than the data. Stack: React 19, TypeScript (strict), Vite 6, Tailwind 4, React Router 7, ECharts 6 (SVG renderer), Vitest, Playwright.
+A responsive monitoring interface for 20 synthetic machine-learning training runs, including loss, learning rate, and gradient norm charts. It helps a reviewer judge whether costly training should continue without relying on misleading smoothing or missing-data assumptions. Built with React, TypeScript (strict), Vite, ECharts (SVG renderer), Vitest, and Playwright. Data generation and analysis run in a Web Worker that returns typed-array columns plus a null mask, so NaN, ±Infinity and `null` survive the transfer. The chart code is lazy-loaded, and search, filters and sort live in the URL.
 
-- **Pipeline:** generate → `analyzeRun` (integrity engine) → segment-aware **M4 downsampling** for the visible range and pixel width → one ECharts series per contiguous segment.
-- **Off the main thread:** generation and analysis run in a **Web Worker**. It returns lossless typed-array columns plus a null mask, so NaN, ±Infinity, −0 and `null` all survive the transfer.
-- **Lazy loading:** charts and ECharts are a separate chunk. Search, filters and sort live in the URL.
+**Live app:** https://training-run-monitor-gold.vercel.app/ (Vercel, deployed commit `20654d3`) | **Repository:** https://github.com/rauantuken06/Training-Run-Monitor
 
-## Data truthfulness guarantees (each enforced by tests)
+## Data truthfulness and validation
 
-- **Raw data is never mutated.** Normalization produces derived structures and reports every change in `DataQualityDiagnostics`.
-- **`null`, `NaN` and ±Infinity stay distinct.** `null` means "not recorded"; NaN and ±Infinity mean "recorded but invalid". None is ever plotted as 0: each appears as a labelled marker (for example "NaN ×600") and a written warning.
-- **Every plotted coordinate is an exact raw (step, value).** There is no smoothing, ECharts sampling or animation. Downsampling keeps the exact minimum and maximum of each pixel column, so the spike appears at every width and zoom level, which was checked against a brute-force reference.
-- **Gaps and invalid values break the line**, never bridged. Conflicting duplicate steps are flagged, and the last recorded value is plotted.
-- **The tooltip reports what is really under the cursor.** When one pixel spans many observations, it says so.
+The dataset includes NaN, positive/negative Infinity, null, out-of-order and duplicate steps, missing intervals, and a 1,000,000-point run with one isolated spike at step 500,123, loss 42.5. The integrity layer retains raw observations, original indices, explicit diagnostics, and line breaks across invalid values or missing steps. `null` means "not recorded"; NaN and ±Infinity mean "recorded but invalid". None is ever plotted as zero: each appears as a labelled marker (for example "NaN ×600") and a written warning.
 
-## Tests and evidence
+Viewport-aware, segment-preserving min/max downsampling keeps original coordinates and visible extrema rather than sampling every Nth observation; it was checked against a brute-force reference. ECharts uses separate series for valid segments, a shared zoom range, linear axes, accurate hover semantics, and visible anomaly markers. Conflicting duplicates are disclosed; the display policy selects the last recorded value, while diagnostics retain the alternatives.
 
-Summary with real output and skip reasons: `docs/test-evidence.md`.
+## Verification evidence
 
-| Check | Result (final run, Windows 11) | Evidence |
-| --- | --- | --- |
-| Lint / typecheck / build | pass / pass / pass (0 errors each) | `docs/qa/logs/{lint,typecheck,build}.log` |
-| Unit and component tests (Vitest) | 564 passed, 0 failed (35 files) | `docs/qa/logs/unit.log` |
-| e2e Chrome 157 (desktop + Pixel 7 emulation) | 86 passed, 8 skipped¹, 0 failed | `docs/qa/logs/e2e-chrome.log` |
-| e2e Edge (desktop + mobile emulation) | 86 passed, 8 skipped¹, 0 failed | `docs/qa/logs/e2e-edge.log` |
-| e2e Firefox (Playwright build, desktop) | 46 passed, 1 skipped¹, 0 failed | `docs/qa/logs/e2e-firefox.log` |
-| axe WCAG 2.0–2.2 A/AA, light and dark | 0 violations in every tested state | `e2e/final-qa.spec.ts`, `docs/final-qa-report.md` |
-| `npm audit` | production deps: 0; dev-only: 7 moderate (lint tooling) | `docs/qa/logs/npm-audit.log` |
-| Smoke test on the **live URL**, Chrome + Pixel 7 (12 tests) | 1 worker: 12/12 (candidate), 12/12 (agent). 4 workers: 12/12, then **9/12**⁴ | `docs/qa/logs/production-smoke-*.log` |
-
-⁴ Timeouts; cause unconfirmed, not fixed. ¹ Intentional skips: desktop-only keyboard and mouse-hover tests on the mobile project, and the missing-asset 404 check, which only applies to a deployment (`vite preview` serves `index.html` for every path). Key tests: the spike's drawn SVG vertex lies within 0.5 px of (500,123, 42.5) at full range and zoomed, and an exact hover shows "Step 500,123 · Loss: 42.5"; 400 seeded randomized integrity cases and 300 randomized downsampling cases; request races (A → B → C); 40 responsive screenshots in `docs/qa/screenshots/`.
-
-## Performance (Task 08, measured)
-
-Production build, Chrome 157 at **4× CPU throttling** (Chrome DevTools Protocol), median of 5 runs. Traces: `docs/performance/{baseline,after}/traces/*.json.gz`.
-
-| Metric | Before | After |
-| --- | --- | --- |
-| run-20 total blocking time (to charts painted) | 3,638 ms | **1,023 ms** (−72%) |
-| run-20 longest main-thread task | 1,824 ms | **332 ms** (−82%) |
-| run-20 charts painted (first render)² | 4,348 ms | 2,530 ms² |
-| Runs list: table painted / JS downloaded | 978 ms / 950 kB | 763 ms / 371 kB |
-| Zoom in, new viewport / revisited viewport | 504 / 360 ms | 440 / 144 ms |
-| Reset zoom (first click) | 648 ms | 176 ms |
-| Hover, input → next frame (median / max) | 32 / 122 ms | 31 / 122 ms (unchanged; not a bottleneck) |
-| run-20 tab memory (Task 09, Windows process counters)³ | — | 123–128 MB private, 223–225 MB peak while loading; JS heap 74.9 MB |
-
-² **CPU throttling does not slow the Web Worker** (verified), so this time is overstated for a slow CPU; with the worker slowed equally, charts would paint at about 3.8 s (**an estimate, not a measurement**). Main-thread figures are unaffected. ³ Windows counters of the tab's renderer process (page + worker; the worker's share cannot be separated, and no worker remains after loading). **Not** Chrome Task Manager's "Memory footprint" (not measured); no earlier baseline.
-
-## Silent failures found and fixed
-
-| Found in | Defect (reproduced first, then covered by a regression test) |
+| Check | Result / scope |
 | --- | --- |
-| Task 07 | Range form read "5.000" as step 5 (now: whole steps only, `.` rejected) |
-| Task 07 | A requested range outside the data was silently replaced by a different one (now trimmed to the data and labelled "Adjusted to …"; a range with no data shows an error) |
-| Task 07 | The tooltip headline named a neighbouring step as the hovered one (now names the cursor step or the pixel's step range) |
-| Task 07 | run-20 `lr` y-axis printed six identical tick labels (precision now follows the visible range) |
-| Task 09 | **Fast typing in search dropped characters** ("loss" became "lss"; 5 of 5 runs at 6× throttling): the input followed an asynchronously updated URL |
-| Task 09 | Light-theme axis lines had 2.56:1 contrast (WCAG 1.4.11 needs 3:1; now 4.76:1). axe could not check the chart SVG. |
-| Task 09 | A worker that never answered left the page on "Loading…" forever (now a 60 s timeout with Retry) |
+| Unit / browser tests (local production build) | 564 unit tests passed. E2E: Chrome 86 passed and Edge 86 passed (8 intentional skips each), Firefox 46 passed (1 skip); 0 failed. Lint, typecheck and build pass. |
+| Production smoke tests (live URL, commit `20654d3`; 12 tests in desktop Chrome and Pixel 7 emulation: direct routes, refresh, assets, 1M spike/zoom/hover, invalid-value warnings) | **Candidate:** first 4-worker run 12/12 passed (original log not retained); 4-worker rerun **9 passed, 3 timed out** (log saved); 1-worker run 12/12 passed (log saved). **AI agent:** independent 1-worker run 12/12 passed (log saved). The root cause of the parallel timeouts is **unconfirmed**, and they have not been fixed. |
+| Accessibility / security | axe reported 0 violations (WCAG 2.0–2.2 A/AA) in the tested light/dark states; in Firefox, six rules were skipped on one state. Focus outlines and chart colour contrast are checked by automated tests, and the Tab order was walked through by the AI agent. This is not a manual audit by the candidate. npm audit: 0 production vulnerabilities, 7 moderate dev-tool findings. |
 
-Also checked with no defect found: request races, stale cache, error after success, reset restoring anomaly markers, diverging runs staying in range, zero and negative values, and fixed en-US number and UTC date formatting.
+## Performance before / after
 
-## Accessibility and QA
+| Metric (Chrome, CPU 4×) | Before | After |
+| --- | --- | --- |
+| 1M run: total main-thread blocking | 3,638 ms | 1,023 ms (−72%) |
+| 1M run: longest task | 1,824 ms | 332 ms (−82%) |
+| First charts painted | 4,348 ms | 2,530 ms (−42%)* |
+| New zoom viewport / revisited viewport | 504 / 360 ms | 440 / 144 ms |
+| Hover input to next frame (median) | 32 ms | 31 ms |
+| Runs-list JavaScript downloaded | 950 kB | 371 kB (−61%) |
 
-- **Automated:** axe finds 0 violations (WCAG 2.0–2.2 A/AA) in light and dark mode on the list, run pages (details open, form error), unknown run and 404.
-- **Checked by hand:** WCAG contrast of every chart colour, a visible 2 px focus outline on every Tab stop, a logical keyboard order, and reflow at 320 and 640 px (no sideways scrolling).
-- **Gaps:** in Firefox, six axe rules are skipped on one state (they crash Playwright's Firefox build). Not tested: screen readers (none installed), real browser zoom, forced colours, Safari, real phones. **This is not an accessibility certification.**
+<p class="note">* Chrome's 4× CPU throttling does not slow the Web Worker equally, so end-to-end loading gains overstate the expected gains on a genuinely slower CPU. About 3.8 s is an estimate for that case, not a measurement. Measurements are medians of five runs; traces are in <code>docs/performance/{baseline,after}/traces/</code>.</p>
 
-## Verdict: SHIP (deployed; production smoke test passes with 1 worker)
+<div class="page-break"></div>
 
-- **Data integrity and visual correctness:** the strongest areas. Each guarantee above is enforced by tests, and the spike is checked against the pixels actually drawn.
-- **Reliability:** no open defects. Every failure path shows a visible error with Retry.
-- **Performance:** the 1M-point run no longer freezes the page (longest task 332 ms at 4× throttling).
-- **Acceptable limitations:** zooming to a new viewport still takes about 440 ms at 4× throttling; no screen-reader, Safari or real-device testing yet; some heavy tests are sensitive to machine load; the production smoke test times out intermittently with 4 workers.
-- **Priorities:** (1) a screen-reader pass (NVDA or VoiceOver); (2) move downsampling to the worker or pre-aggregate at several resolutions, to speed up zoom; (3) Safari and real devices; (4) a shorter worker timeout or a progress signal.
+# Findings, decision, and limitations
 
-## AI tool usage and human verification
+<p class="sub">Submission report | Technical conclusions</p>
 
-- **Tool:** **Claude Code** (Anthropic's coding agent, in VS Code; Claude Opus 5.5 in the final sessions) wrote most of the code, tests, scripts and documentation, and ran every command and browser check reported here, except the candidate's three production smoke runs. `[QUESTION FOR CANDIDATE: were any other AI tools used (e.g. Copilot, ChatGPT)? If so, name them here.]`
-- **Candidate's role** (as recorded in the session): wrote the ten task specifications and their acceptance criteria; chose Vitest 4 with a Windows drive-letter wrapper over Vitest 5; set the Git workflow (work on `main`, commit and push only with approval) and merged the pull requests; deployed to Vercel and ran the first three production smoke tests. The agent committed only when asked.
-- **Rejected or changed:** `npm audit fix --force` was rejected (it would have jumped to Vitest 5). Measurements overturned some of the agent's first ideas: posting a million point objects from the worker cost about 1.8 s, so typed arrays are used; an early "0 axe violations" was not trusted until manual contrast checks found the axis-line failure.
-- **Executed:** all test counts and measurements above come from commands that were actually run; the logs are in `docs/qa/logs/`.
-- **Personally reviewed by the candidate:** `[QUESTION FOR CANDIDATE: which diffs, screenshots or app behaviour did you review or try yourself? Do not leave this blank.]`
+## Silent failures: what looked correct but was not
+
+| Observed defect | Resolution |
+| --- | --- |
+| Locale-dependent zoom text was misread ("5.000" became step 5) | Accept unambiguous whole-step formats and explain rejected input. |
+| Requested viewport silently shifted | Trim only overlapping bounds; reject wholly empty ranges. |
+| Tooltip labelled a nearby sample as the cursor step | Distinguish cursor range from nearest plotted observation. |
+| Different axis ticks displayed identical labels | Adapt numeric precision to the actual viewport. |
+| Fast typing dropped search characters | Maintain local input state while synchronizing with URL changes. |
+| Axis contrast insufficient; hung Worker stayed loading | Improve contrast; add a timed, visible failure and retry. |
+
+Each defect was reproduced first and is now covered by a regression test.
+
+## SHIP verdict and next priorities
+
+**SHIP.** The public deployment passed all 12 production smoke tests in the first parallel run and in both sequential runs, one by the candidate and one by the AI agent. One parallel rerun had 3 timeouts; their root cause is unconfirmed. In the passing runs, the key 1M-point spike remained visible and hoverable after zoom, and invalid values were shown as labelled warnings, not silently converted to zero. The product is suitable as a tested take-home demonstration, not a certified production ML observability system.
+
+Next priorities: further reduce first-time zoom latency (~440 ms under 4× CPU throttling); investigate the parallel production smoke-test timeouts; test with a real screen reader and slower physical devices; and establish real-backend freshness and request-race guarantees before using this with live training. Tests cannot guarantee that extrema-preserving reduction retains every oscillation or minor secondary event.
+
+## Memory and measurement limitations
+
+With the 1M-point run open, Windows process counters showed about 123–128 MB settled private memory and 223–225 MB peak during loading. Main-thread JS heap was about 74.9 MB. These are not Chrome Task Manager memory-footprint measurements. Browser profiling used automated Chrome traces with CPU throttling at 4×; the worker was not throttled to the same degree. Production smoke tests ran only in Chrome (desktop and Pixel 7 emulation); Edge and Firefox were tested only against the local production build. Safari, real devices, and a manual screen-reader session were not verified.
+
+## AI-assisted workflow and verification
+
+- **ChatGPT:** planning and review. It helped structure the work into verifiable milestones and reviewed the reported results.
+- **Claude Code** (Anthropic's coding agent in VS Code): implementation and verification. It wrote most of the code, tests and documentation, ran lint, typecheck, unit, e2e and build, recorded the performance traces and memory measurements, ran the accessibility checks described above, and independently re-ran the production smoke test (12/12, 1 worker).
+- **Candidate:** wrote the task specifications, set the Git workflow (work on `main`, commit and push only with approval), made the commits and pushes, merged the pull requests, deployed to Vercel, confirmed the deployed commit `20654d3`, and ran the three production smoke runs listed above.
+
+Suggestions were evaluated against test evidence; forced dependency upgrades were avoided, and detected defects were addressed with regression checks. This does not imply that every code path was manually inspected, or that the candidate repeated every automated check without assistance.
 
 ## Reflection
 
-**[CANDIDATE TO WRITE: 4–6 sentences in your own words: what surprised you, what you would do differently, what you learned about checking AI-generated work.]**
+A key lesson was that a chart can look reasonable yet communicate the wrong step, hide a gap, or make different values appear identical. Browser-level checks uncovered errors missed by unit tests, while profiling showed that removing main-thread blocking does not necessarily mean equal speedups on slower machines. The remaining concerns are interaction latency on constrained hardware and accessibility beyond automated audits.
+
+## Evidence and reproducibility
+
+Repository evidence: `docs/test-evidence.md`, `docs/qa/logs/` (including `production-smoke-vercel.log` for the failed parallel rerun, `production-smoke-sequential.log`, and `production-smoke-agent-sequential.log`), `docs/performance-report.md`, `docs/performance/{baseline,after}/traces/`, `docs/silent-failures-audit.md`, and `docs/final-qa-report.md`. Every result in this report is copied from those logs and reports. The only exception is the first parallel production run, which is reported by the candidate and has no saved log.

@@ -486,7 +486,7 @@ Full matrix, evidence and remaining risks: [docs/final-qa-report.md](docs/final-
   - Fast typing in the search box dropped characters, because the input followed the asynchronously updated URL.
   - Light-theme chart axis lines were below WCAG 1.4.11 contrast (2.56:1, now 4.76:1).
   - A run worker that never answered left the page loading forever. It now times out after 60 s and offers Retry.
-- **Accessibility:** axe (WCAG 2.0–2.2 A/AA) finds 0 violations in light and dark mode. Chart contrast, focus visibility, keyboard order and reflow at 320/640 px were also checked by hand. This is not a certification: **no screen reader was tested** (none installed).
+- **Accessibility:** axe (WCAG 2.0–2.2 A/AA) finds 0 violations in light and dark mode. Chart contrast, focus visibility and reflow at 320/640 px are also checked by automated tests, and the keyboard order was walked through by the AI agent (Claude Code), not manually by the candidate. This is not a certification: **no screen reader was tested** (none installed).
 - **Browsers:** the full e2e suite passes in Chrome, Edge and Playwright's Firefox (`PW_BROWSER=firefox npm run test:e2e`).
   - Firefox runs with 2 workers and longer axe time limits, because axe is slow there.
   - Six axe rules are skipped on one Firefox state, because they crash Playwright's Firefox. The report documents this.
@@ -504,7 +504,7 @@ Full matrix, evidence and remaining risks: [docs/final-qa-report.md](docs/final-
 | Run | Who ran it | Result | Log |
 | --- | --- | --- | --- |
 | Parallel, 4 workers (first run) | Candidate | 12 passed, 0 failed, 28.6 s | none saved (user-reported) |
-| Parallel, 4 workers (rerun) | Candidate | **9 passed, 3 failed**, 2.0 min | [production-smoke-vercel.log](docs/qa/logs/production-smoke-vercel.log) |
+| Parallel, 4 workers (rerun) | Candidate | **9 passed, 3 failed** (all 3 timeouts), 2.0 min | [production-smoke-vercel.log](docs/qa/logs/production-smoke-vercel.log) |
 | Sequential, `--workers=1 --reporter=line` | Candidate | 12 passed, 0 failed, 1.4 min (per the log) | [production-smoke-sequential.log](docs/qa/logs/production-smoke-sequential.log) |
 | Sequential, `--workers=1 --reporter=line` | AI agent (independent rerun) | 12 passed, 0 failed, 1.3 min | [production-smoke-agent-sequential.log](docs/qa/logs/production-smoke-agent-sequential.log) |
 

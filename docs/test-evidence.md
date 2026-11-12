@@ -84,4 +84,4 @@ The logs are kept exactly as captured. The candidate's two logs are UTF-16 Power
 
 - **axe** (WCAG 2.0/2.1/2.2 A and AA tags): 0 violations in every tested state, light and dark. These scans are part of the e2e suites above (`e2e/final-qa.spec.ts`).
 - **Firefox:** six axe rules are skipped on one state, because they crash Playwright's Firefox build.
-- **Checked by hand:** chart colour contrast, focus visibility, keyboard order and reflow. This is not a certification.
+- **Checked outside axe:** chart colour contrast (unit test), focus visibility and reflow (e2e), and keyboard order (walked through by the AI agent). None of these was a manual check by the candidate. This is not a certification.
