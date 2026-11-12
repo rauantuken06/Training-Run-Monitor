@@ -1,0 +1,6 @@
+$ npm run lint
+
+> training-run-monitor@0.1.0 lint
+> eslint .
+
+exit=0

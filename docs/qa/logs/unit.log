@@ -1,0 +1,15 @@
+$ npm run test
+
+> training-run-monitor@0.1.0 test
+> node scripts/run-vitest.mjs run
+
+
+ RUN  v4.1.12 C:/soupe_task1
+
+
+ Test Files  35 passed (35)
+      Tests  564 passed (564)
+   Start at  11:09:21
+   Duration  35.59s (transform 6.10s, setup 21.78s, import 46.45s, tests 63.57s, environment 80.50s)
+
+exit=0

@@ -2,6 +2,8 @@
 
 Date: 2026-11-12. Machine: Windows 11 Pro, Chrome 157 (157.0.8103.39 for most runs; it auto-updated to 157.0.8103.52 before the final memory measurement), Microsoft Edge (Chromium, stable channel), Playwright's bundled Firefox. All checks ran against the production build (`npm run build` + `vite preview`) unless a row says otherwise. Evidence files live in [docs/qa/](qa/).
 
+> **Note (Task 10):** the files in [qa/logs/](qa/logs/) were overwritten by the final Task 10 verification runs. Those runs include the new production smoke tests, so their counts are higher than the Task 09 counts below (for example Chrome 86 passed instead of 76). `e2e-firefox-rerun.log` is the Task 09 Firefox run with 4 workers, which had 6 failures (section 3). Final results: [test-evidence.md](test-evidence.md).
+
 Status values: **PASS** (checked, no defect), **FIXED** (defect found in Task 09 and fixed, with a regression test), **FAIL** (open defect), **UNVERIFIED** (not checked, or only partly checked; the reason is given).
 
 An automated axe scan is **not** an accessibility certification. axe finds a subset of WCAG failures. The manual checks below cover more, but no assistive-technology user testing was done, and no screen reader was available on this machine.

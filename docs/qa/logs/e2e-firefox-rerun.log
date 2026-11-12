@@ -1,0 +1,177 @@
+[WebServer] 
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 41 tests using 4 workers
+
+  ok  3 [firefox] › e2e\charts.spec.ts:143:1 › gaps break the line and are labelled; hovering a gap explains it (26.6s)
+  ok  1 [firefox] › e2e\charts.spec.ts:106:1 › a viewport beside the spike does not draw or scale for it (42.5s)
+  ok  2 [firefox] › e2e\charts.spec.ts:79:1 › the 1M-point spike is drawn at its exact position, full range and zoomed (47.8s)
+  x   4 [firefox] › e2e\charts.spec.ts:117:1 › drag zoom and keyboard zoom move all three charts together (35.8s)
+  ok  5 [firefox] › e2e\charts.spec.ts:155:1 › NaN, +Infinity and -Infinity are labelled markers, never plotted values (27.7s)
+  ok  6 [firefox] › e2e\charts.spec.ts:169:1 › conflicting duplicates are flagged on the chart (9.6s)
+  ok  9 [firefox] › e2e\dashboard.spec.ts:17:1 › filters and sorts with the keyboard only (10.4s)
+  ok  7 [firefox] › e2e\charts.spec.ts:174:1 › charts fit the viewport without horizontal overflow (15.1s)
+  ok 10 [firefox] › e2e\dashboard.spec.ts:39:1 › empty results offer a way back (9.8s)
+  ok 11 [firefox] › e2e\dashboard.spec.ts:46:1 › back link restores the filtered list (10.1s)
+  ok 12 [firefox] › e2e\dashboard.spec.ts:55:1 › run-12 shows its NaN ending as NaN with a warning (10.9s)
+  ok 13 [firefox] › e2e\dashboard.spec.ts:64:1 › run-15 conflicting duplicates can be expanded with the keyboard (8.6s)
+  ok  8 [firefox] › e2e\dashboard.spec.ts:10:1 › lists all 20 runs without horizontal page overflow (20.8s)
+  ok 14 [firefox] › e2e\dashboard.spec.ts:77:1 › the million-point run loads and shows the exact spike maximum (14.8s)
+  ok 17 [firefox] › e2e\final-qa.spec.ts:74:5 › axe WCAG 2.x A/AA, light theme › unknown run and unknown route pages have no violations (26.1s)
+  x  15 [firefox] › e2e\final-qa.spec.ts:22:5 › axe WCAG 2.x A/AA, light theme › runs list (default, filtered, empty) has no violations (31.5s)
+  x  18 [firefox] › e2e\final-qa.spec.ts:22:5 › axe WCAG 2.x A/AA, dark theme › runs list (default, filtered, empty) has no violations (32.5s)
+  x  20 [firefox] › e2e\final-qa.spec.ts:74:5 › axe WCAG 2.x A/AA, dark theme › unknown run and unknown route pages have no violations (30.6s)
+  ok 21 [firefox] › e2e\final-qa.spec.ts:84:1 › every keyboard focus stop shows a visible focus outline (27.5s)
+  ok 22 [firefox] › e2e\final-qa.spec.ts:130:1 › URL filters survive a reload and the browser Back button (10.6s)
+  ok 24 [firefox] › e2e\final-qa.spec.ts:150:1 › a failing Web Worker shows a visible error, and Retry recovers (7.5s)
+  ok 25 [firefox] › e2e\final-qa.spec.ts:164:1 › if the chart code cannot be downloaded, the page says so and keeps the summaries (6.8s)
+  ok 26 [firefox] › e2e\final-qa.spec.ts:172:1 › regression: fast typing in the search box keeps every character, even on a slow CPU (8.6s)
+  ok 27 [firefox] › e2e\navigation.spec.ts:3:1 › runs list page loads (5.3s)
+  ok 23 [firefox] › e2e\final-qa.spec.ts:113:1 › reflow: no horizontal page scrolling at 320 px and at 200% zoom (640 px) (37.6s)
+  x  16 [firefox] › e2e\final-qa.spec.ts:30:5 › axe WCAG 2.x A/AA, light theme › run pages with anomalies, open details and a form error have no violations (2.0m)
+  ok 28 [firefox] › e2e\navigation.spec.ts:9:1 › run details route loads directly (6.2s)
+  ok 29 [firefox] › e2e\navigation.spec.ts:15:1 › navigates between list and details (10.3s)
+  ok 30 [firefox] › e2e\performance-architecture.spec.ts:37:1 › the runs list does not download the chart code; a run page loads it on demand (10.7s)
+  ok 32 [firefox] › e2e\performance-architecture.spec.ts:48:1 › a deep link to a run loads data in a Web Worker that is closed when done (12.4s)
+  ok 31 [firefox] › e2e\navigation.spec.ts:26:1 › skip link is the first focusable element and targets main (15.5s)
+  ok 33 [firefox] › e2e\performance-architecture.spec.ts:57:1 › rapid navigation closes superseded workers and shows only the last run (10.0s)
+  ok 35 [firefox] › e2e\reliability.spec.ts:28:1 › rapid run switching (three navigations in one tick) shows only the last run (10.1s)
+  ok 34 [firefox] › e2e\performance-architecture.spec.ts:72:1 › the million-point run still draws the exact spike after the worker hand-off (12.6s)
+  ok 36 [firefox] › e2e\reliability.spec.ts:54:5 › de-DE browser in Pacific/Kiritimati › dates stay on their UTC day and are labelled UTC; numbers use the fixed en-US format (14.5s)
+  ok 37 [firefox] › e2e\reliability.spec.ts:54:5 › ru-RU browser in Pacific/Pago_Pago › dates stay on their UTC day and are labelled UTC; numbers use the fixed en-US format (10.2s)
+  ok 38 [firefox] › e2e\reliability.spec.ts:71:1 › regression: y-axis tick labels stay distinct when values barely change (10.1s)
+  ok 39 [firefox] › e2e\reliability.spec.ts:86:1 › regression: the range form rejects "5.000" and trims ranges to the data (8.4s)
+  x  19 [firefox] › e2e\final-qa.spec.ts:30:5 › axe WCAG 2.x A/AA, dark theme › run pages with anomalies, open details and a form error have no violations (2.3m)
+  ok 40 [firefox] › e2e\reliability.spec.ts:98:1 › regression: hovering inside a gap names the cursor step, then the nearest observation (9.7s)
+  ok 41 [firefox] › e2e\reliability.spec.ts:115:1 › zooming away from NaNs and resetting brings their markers back; a diverging run stays divergent (11.1s)
+
+
+  1) [firefox] › e2e\charts.spec.ts:117:1 › drag zoom and keyboard zoom move all three charts together 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.scrollIntoViewIfNeeded: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByTestId('metric-chart-loss')
+
+
+      119 |   await openRun(page, 'run-01');
+      120 |   const loss = page.getByTestId('metric-chart-loss');
+    > 121 |   await loss.scrollIntoViewIfNeeded();
+          |              ^
+      122 |   const box = await loss.boundingBox();
+      123 |   if (!box) throw new Error('no box');
+      124 |   await page.mouse.move(box.x + 300, box.y + 100);
+        at c:\soupe_task1\e2e\charts.spec.ts:121:14
+
+    Error Context: test-results\charts-drag-zoom-and-keybo-de39c-e-all-three-charts-together-firefox\error-context.md
+
+  2) [firefox] › e2e\final-qa.spec.ts:22:5 › axe WCAG 2.x A/AA, light theme › runs list (default, filtered, empty) has no violations 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.evaluate: Test timeout of 30000ms exceeded.
+
+      12 |
+      13 | async function axeViolations(page: Page) {
+    > 14 |   const result = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+         |                                                                     ^
+      15 |   return result.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(', ')}`);
+      16 | }
+      17 |
+        at AxeBuilder.analyze (c:\soupe_task1\node_modules\@axe-core\playwright\dist\index.mjs:202:16)
+        at axeViolations (c:\soupe_task1\e2e\final-qa.spec.ts:14:69)
+        at c:\soupe_task1\e2e\final-qa.spec.ts:26:22
+
+    Error Context: test-results\final-qa-axe-WCAG-2-x-A-AA-4a3b3-red-empty-has-no-violations-firefox\error-context.md
+
+  3) [firefox] › e2e\final-qa.spec.ts:30:5 › axe WCAG 2.x A/AA, light theme › run pages with anomalies, open details and a form error have no violations 
+
+    Test timeout of 120000ms exceeded.
+
+    Error: page.goto: Test timeout of 120000ms exceeded.
+    Call log:
+      - navigating to "http://localhost:4173/runs/run-15", waiting until "load"
+
+
+       7 |
+       8 | async function openRun(page: Page, id: string) {
+    >  9 |   await page.goto(`/runs/${id}`);
+         |              ^
+      10 |   await page.getByTestId('metric-chart-loss').locator('svg').waitFor({ timeout: 30_000 });
+      11 | }
+      12 |
+        at openRun (c:\soupe_task1\e2e\final-qa.spec.ts:9:14)
+        at c:\soupe_task1\e2e\final-qa.spec.ts:61:15
+
+    Error Context: test-results\final-qa-axe-WCAG-2-x-A-AA-df851-rm-error-have-no-violations-firefox\error-context.md
+
+  4) [firefox] › e2e\final-qa.spec.ts:22:5 › axe WCAG 2.x A/AA, dark theme › runs list (default, filtered, empty) has no violations 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.evaluate: Test timeout of 30000ms exceeded.
+     Please check out https://github.com/dequelabs/axe-core-npm/blob/develop/packages/playwright/error-handling.md
+
+      12 |
+      13 | async function axeViolations(page: Page) {
+    > 14 |   const result = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+         |                  ^
+      15 |   return result.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(', ')}`);
+      16 | }
+      17 |
+        at AxeBuilder.analyze (c:\soupe_task1\node_modules\@axe-core\playwright\dist\index.mjs:219:13)
+        at axeViolations (c:\soupe_task1\e2e\final-qa.spec.ts:14:18)
+        at c:\soupe_task1\e2e\final-qa.spec.ts:26:16
+    [cause]: Error: page.evaluate: Test timeout of 30000ms exceeded.
+        at AxeBuilder.finishRun (c:\soupe_task1\node_modules\@axe-core\playwright\dist\index.mjs:320:21)
+        at AxeBuilder.analyze (c:\soupe_task1\node_modules\@axe-core\playwright\dist\index.mjs:217:14)
+        at axeViolations (c:\soupe_task1\e2e\final-qa.spec.ts:14:18)
+        at c:\soupe_task1\e2e\final-qa.spec.ts:26:16
+
+    Error Context: test-results\final-qa-axe-WCAG-2-x-A-AA-14b09-red-empty-has-no-violations-firefox\error-context.md
+
+  5) [firefox] › e2e\final-qa.spec.ts:30:5 › axe WCAG 2.x A/AA, dark theme › run pages with anomalies, open details and a form error have no violations 
+
+    Test timeout of 120000ms exceeded.
+
+    Error: browserContext.close: Protocol error (Browser.removeBrowserContext): can't access property "_maybeDontRestoreTabs", this[#windows][this[#windowIds].get(...)] is undefined
+
+    Error: page.evaluate: Test timeout of 120000ms exceeded.
+     Please check out https://github.com/dequelabs/axe-core-npm/blob/develop/packages/playwright/error-handling.md
+
+      12 |
+      13 | async function axeViolations(page: Page) {
+    > 14 |   const result = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+         |                  ^
+      15 |   return result.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(', ')}`);
+      16 | }
+      17 |
+        at AxeBuilder.analyze (c:\soupe_task1\node_modules\@axe-core\playwright\dist\index.mjs:219:13)
+        at axeViolations (c:\soupe_task1\e2e\final-qa.spec.ts:14:18)
+        at c:\soupe_task1\e2e\final-qa.spec.ts:63:16
+    [cause]: Error: page.evaluate: Test timeout of 120000ms exceeded.
+        at AxeBuilder.finishRun (c:\soupe_task1\node_modules\@axe-core\playwright\dist\index.mjs:320:21)
+        at AxeBuilder.analyze (c:\soupe_task1\node_modules\@axe-core\playwright\dist\index.mjs:217:14)
+        at axeViolations (c:\soupe_task1\e2e\final-qa.spec.ts:14:18)
+        at c:\soupe_task1\e2e\final-qa.spec.ts:63:16
+
+    Error Context: test-results\final-qa-axe-WCAG-2-x-A-AA-609bf-rm-error-have-no-violations-firefox\error-context.md
+
+  6) [firefox] › e2e\final-qa.spec.ts:74:5 › axe WCAG 2.x A/AA, dark theme › unknown run and unknown route pages have no violations 
+
+    Test timeout of 30000ms exceeded.
+
+    Error Context: test-results\final-qa-axe-WCAG-2-x-A-AA-5e089-te-pages-have-no-violations-firefox\error-context.md
+
+  6 failed
+    [firefox] › e2e\charts.spec.ts:117:1 › drag zoom and keyboard zoom move all three charts together 
+    [firefox] › e2e\final-qa.spec.ts:22:5 › axe WCAG 2.x A/AA, light theme › runs list (default, filtered, empty) has no violations 
+    [firefox] › e2e\final-qa.spec.ts:30:5 › axe WCAG 2.x A/AA, light theme › run pages with anomalies, open details and a form error have no violations 
+    [firefox] › e2e\final-qa.spec.ts:22:5 › axe WCAG 2.x A/AA, dark theme › runs list (default, filtered, empty) has no violations 
+    [firefox] › e2e\final-qa.spec.ts:30:5 › axe WCAG 2.x A/AA, dark theme › run pages with anomalies, open details and a form error have no violations 
+    [firefox] › e2e\final-qa.spec.ts:74:5 › axe WCAG 2.x A/AA, dark theme › unknown run and unknown route pages have no violations 
+  35 passed (5.3m)

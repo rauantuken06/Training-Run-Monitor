@@ -1,0 +1,111 @@
+$ PW_CHANNEL=msedge npm run test:e2e
+
+> training-run-monitor@0.1.0 test:e2e
+> playwright test
+
+[WebServer] 
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 94 tests using 4 workers
+
+  ok  4 [chromium] › e2e\charts.spec.ts:117:1 › drag zoom and keyboard zoom move all three charts together (4.3s)
+  ok  3 [chromium] › e2e\charts.spec.ts:106:1 › a viewport beside the spike does not draw or scale for it (6.2s)
+  ok  2 [chromium] › e2e\charts.spec.ts:143:1 › gaps break the line and are labelled; hovering a gap explains it (7.3s)
+  ok  1 [chromium] › e2e\charts.spec.ts:79:1 › the 1M-point spike is drawn at its exact position, full range and zoomed (7.5s)
+  ok  6 [chromium] › e2e\charts.spec.ts:169:1 › conflicting duplicates are flagged on the chart (1.8s)
+  ok  8 [chromium] › e2e\dashboard.spec.ts:10:1 › lists all 20 runs without horizontal page overflow (1.1s)
+  ok  5 [chromium] › e2e\charts.spec.ts:155:1 › NaN, +Infinity and -Infinity are labelled markers, never plotted values (4.6s)
+  ok  9 [chromium] › e2e\dashboard.spec.ts:17:1 › filters and sorts with the keyboard only (1.3s)
+  ok 10 [chromium] › e2e\dashboard.spec.ts:39:1 › empty results offer a way back (943ms)
+  ok 12 [chromium] › e2e\dashboard.spec.ts:55:1 › run-12 shows its NaN ending as NaN with a warning (1.3s)
+  ok 11 [chromium] › e2e\dashboard.spec.ts:46:1 › back link restores the filtered list (1.5s)
+  ok 13 [chromium] › e2e\dashboard.spec.ts:64:1 › run-15 conflicting duplicates can be expanded with the keyboard (1.4s)
+  ok  7 [chromium] › e2e\charts.spec.ts:174:1 › charts fit the viewport without horizontal overflow (4.1s)
+  ok 14 [chromium] › e2e\dashboard.spec.ts:77:1 › the million-point run loads and shows the exact spike maximum (4.2s)
+  ok 17 [chromium] › e2e\final-qa.spec.ts:79:5 › axe WCAG 2.x A/AA, light theme › unknown run and unknown route pages have no violations (3.2s)
+  ok 15 [chromium] › e2e\final-qa.spec.ts:27:5 › axe WCAG 2.x A/AA, light theme › runs list (default, filtered, empty) has no violations (6.0s)
+  ok 20 [chromium] › e2e\final-qa.spec.ts:79:5 › axe WCAG 2.x A/AA, dark theme › unknown run and unknown route pages have no violations (3.0s)
+  ok 19 [chromium] › e2e\final-qa.spec.ts:27:5 › axe WCAG 2.x A/AA, dark theme › runs list (default, filtered, empty) has no violations (5.7s)
+  ok 21 [chromium] › e2e\final-qa.spec.ts:89:1 › every keyboard focus stop shows a visible focus outline (2.1s)
+  ok 23 [chromium] › e2e\final-qa.spec.ts:135:1 › URL filters survive a reload and the browser Back button (1.2s)
+  ok 24 [chromium] › e2e\final-qa.spec.ts:155:1 › a failing Web Worker shows a visible error, and Retry recovers (1.4s)
+  ok 16 [chromium] › e2e\final-qa.spec.ts:35:5 › axe WCAG 2.x A/AA, light theme › run pages with anomalies, open details and a form error have no violations (14.4s)
+  ok 25 [chromium] › e2e\final-qa.spec.ts:169:1 › if the chart code cannot be downloaded, the page says so and keeps the summaries (1.2s)
+  ok 27 [chromium] › e2e\navigation.spec.ts:3:1 › runs list page loads (784ms)
+  ok 28 [chromium] › e2e\navigation.spec.ts:9:1 › run details route loads directly (657ms)
+  ok 29 [chromium] › e2e\navigation.spec.ts:15:1 › navigates between list and details (1.0s)
+  ok 26 [chromium] › e2e\final-qa.spec.ts:177:1 › regression: fast typing in the search box keeps every character, even on a slow CPU (3.6s)
+  ok 30 [chromium] › e2e\navigation.spec.ts:26:1 › skip link is the first focusable element and targets main (882ms)
+  ok 22 [chromium] › e2e\final-qa.spec.ts:118:1 › reflow: no horizontal page scrolling at 320 px and at 200% zoom (640 px) (9.1s)
+  ok 18 [chromium] › e2e\final-qa.spec.ts:35:5 › axe WCAG 2.x A/AA, dark theme › run pages with anomalies, open details and a form error have no violations (15.2s)
+  ok 32 [chromium] › e2e\performance-architecture.spec.ts:48:1 › a deep link to a run loads data in a Web Worker that is closed when done (1.6s)
+  ok 31 [chromium] › e2e\performance-architecture.spec.ts:37:1 › the runs list does not download the chart code; a run page loads it on demand (1.8s)
+  ok 33 [chromium] › e2e\performance-architecture.spec.ts:57:1 › rapid navigation closes superseded workers and shows only the last run (1.8s)
+  ok 36 [chromium] › e2e\production-smoke.spec.ts:60:1 › static assets are served as JavaScript files (925ms)
+  -  37 [chromium] › e2e\production-smoke.spec.ts:69:1 › deployment: a missing asset is a real 404, not the app page
+  ok 38 [chromium] › e2e\production-smoke.spec.ts:78:1 › the runs list shows all 20 runs (1.2s)
+  ok 35 [chromium] › e2e\production-smoke.spec.ts:37:1 › direct navigation and browser refresh work on every kind of URL (3.5s)
+  ok 34 [chromium] › e2e\performance-architecture.spec.ts:72:1 › the million-point run still draws the exact spike after the worker hand-off (4.6s)
+  ok 41 [chromium] › e2e\reliability.spec.ts:28:1 › rapid run switching (three navigations in one tick) shows only the last run (1.8s)
+  ok 40 [chromium] › e2e\production-smoke.spec.ts:118:1 › NaN and ±Infinity are shown as labelled warnings, not plotted values (4.3s)
+  ok 39 [chromium] › e2e\production-smoke.spec.ts:85:1 › million-point run: the spike at step 500,123 (loss 42.5) is in range, zooms and hovers exactly (6.5s)
+  ok 42 [chromium] › e2e\reliability.spec.ts:54:5 › de-DE browser in Pacific/Kiritimati › dates stay on their UTC day and are labelled UTC; numbers use the fixed en-US format (4.7s)
+  ok 43 [chromium] › e2e\reliability.spec.ts:54:5 › ru-RU browser in Pacific/Pago_Pago › dates stay on their UTC day and are labelled UTC; numbers use the fixed en-US format (3.8s)
+  ok 45 [chromium] › e2e\reliability.spec.ts:86:1 › regression: the range form rejects "5.000" and trims ranges to the data (1.9s)
+  ok 44 [chromium] › e2e\reliability.spec.ts:71:1 › regression: y-axis tick labels stay distinct when values barely change (3.3s)
+  ok 46 [chromium] › e2e\reliability.spec.ts:98:1 › regression: hovering inside a gap names the cursor step, then the nearest observation (1.8s)
+  ok 47 [chromium] › e2e\reliability.spec.ts:115:1 › zooming away from NaNs and resetting brings their markers back; a diverging run stays divergent (2.6s)
+  -  50 [mobile-chromium] › e2e\charts.spec.ts:117:1 › drag zoom and keyboard zoom move all three charts together
+  ok 48 [mobile-chromium] › e2e\charts.spec.ts:106:1 › a viewport beside the spike does not draw or scale for it (4.3s)
+  ok 49 [mobile-chromium] › e2e\charts.spec.ts:79:1 › the 1M-point spike is drawn at its exact position, full range and zoomed (5.3s)
+  ok 51 [mobile-chromium] › e2e\charts.spec.ts:155:1 › NaN, +Infinity and -Infinity are labelled markers, never plotted values (3.5s)
+  ok 52 [mobile-chromium] › e2e\charts.spec.ts:169:1 › conflicting duplicates are flagged on the chart (1.7s)
+  ok 54 [mobile-chromium] › e2e\dashboard.spec.ts:10:1 › lists all 20 runs without horizontal page overflow (776ms)
+  -  55 [mobile-chromium] › e2e\dashboard.spec.ts:17:1 › filters and sorts with the keyboard only
+  ok 56 [mobile-chromium] › e2e\dashboard.spec.ts:39:1 › empty results offer a way back (836ms)
+  ok 57 [mobile-chromium] › e2e\dashboard.spec.ts:46:1 › back link restores the filtered list (995ms)
+  -  59 [mobile-chromium] › e2e\dashboard.spec.ts:64:1 › run-15 conflicting duplicates can be expanded with the keyboard
+  ok 58 [mobile-chromium] › e2e\dashboard.spec.ts:55:1 › run-12 shows its NaN ending as NaN with a warning (855ms)
+  ok 53 [mobile-chromium] › e2e\charts.spec.ts:174:1 › charts fit the viewport without horizontal overflow (3.4s)
+  ok 60 [mobile-chromium] › e2e\dashboard.spec.ts:77:1 › the million-point run loads and shows the exact spike maximum (3.1s)
+  ok 63 [mobile-chromium] › e2e\charts.spec.ts:143:1 › gaps break the line and are labelled; hovering a gap explains it (2.1s)
+  ok 61 [mobile-chromium] › e2e\final-qa.spec.ts:27:5 › axe WCAG 2.x A/AA, light theme › runs list (default, filtered, empty) has no violations (5.4s)
+  ok 64 [mobile-chromium] › e2e\final-qa.spec.ts:79:5 › axe WCAG 2.x A/AA, light theme › unknown run and unknown route pages have no violations (3.1s)
+  ok 67 [mobile-chromium] › e2e\final-qa.spec.ts:79:5 › axe WCAG 2.x A/AA, dark theme › unknown run and unknown route pages have no violations (2.8s)
+  -  68 [mobile-chromium] › e2e\final-qa.spec.ts:89:1 › every keyboard focus stop shows a visible focus outline
+  ok 65 [mobile-chromium] › e2e\final-qa.spec.ts:27:5 › axe WCAG 2.x A/AA, dark theme › runs list (default, filtered, empty) has no violations (5.4s)
+  ok 70 [mobile-chromium] › e2e\final-qa.spec.ts:135:1 › URL filters survive a reload and the browser Back button (1.2s)
+  ok 71 [mobile-chromium] › e2e\final-qa.spec.ts:155:1 › a failing Web Worker shows a visible error, and Retry recovers (1.3s)
+  ok 72 [mobile-chromium] › e2e\final-qa.spec.ts:169:1 › if the chart code cannot be downloaded, the page says so and keeps the summaries (1.2s)
+  ok 62 [mobile-chromium] › e2e\final-qa.spec.ts:35:5 › axe WCAG 2.x A/AA, light theme › run pages with anomalies, open details and a form error have no violations (14.4s)
+  ok 74 [mobile-chromium] › e2e\navigation.spec.ts:3:1 › runs list page loads (831ms)
+  ok 75 [mobile-chromium] › e2e\navigation.spec.ts:9:1 › run details route loads directly (613ms)
+  ok 73 [mobile-chromium] › e2e\final-qa.spec.ts:177:1 › regression: fast typing in the search box keeps every character, even on a slow CPU (3.0s)
+  ok 76 [mobile-chromium] › e2e\navigation.spec.ts:15:1 › navigates between list and details (932ms)
+  -  77 [mobile-chromium] › e2e\navigation.spec.ts:26:1 › skip link is the first focusable element and targets main
+  ok 69 [mobile-chromium] › e2e\final-qa.spec.ts:118:1 › reflow: no horizontal page scrolling at 320 px and at 200% zoom (640 px) (8.3s)
+  ok 78 [mobile-chromium] › e2e\performance-architecture.spec.ts:37:1 › the runs list does not download the chart code; a run page loads it on demand (1.5s)
+  ok 79 [mobile-chromium] › e2e\performance-architecture.spec.ts:48:1 › a deep link to a run loads data in a Web Worker that is closed when done (1.4s)
+  ok 66 [mobile-chromium] › e2e\final-qa.spec.ts:35:5 › axe WCAG 2.x A/AA, dark theme › run pages with anomalies, open details and a form error have no violations (14.1s)
+  ok 80 [mobile-chromium] › e2e\performance-architecture.spec.ts:57:1 › rapid navigation closes superseded workers and shows only the last run (1.6s)
+  -  84 [mobile-chromium] › e2e\production-smoke.spec.ts:69:1 › deployment: a missing asset is a real 404, not the app page
+  ok 83 [mobile-chromium] › e2e\production-smoke.spec.ts:60:1 › static assets are served as JavaScript files (942ms)
+  ok 85 [mobile-chromium] › e2e\production-smoke.spec.ts:78:1 › the runs list shows all 20 runs (921ms)
+  ok 82 [mobile-chromium] › e2e\production-smoke.spec.ts:37:1 › direct navigation and browser refresh work on every kind of URL (3.0s)
+  ok 81 [mobile-chromium] › e2e\performance-architecture.spec.ts:72:1 › the million-point run still draws the exact spike after the worker hand-off (4.1s)
+  ok 88 [mobile-chromium] › e2e\reliability.spec.ts:28:1 › rapid run switching (three navigations in one tick) shows only the last run (1.8s)
+  ok 86 [mobile-chromium] › e2e\production-smoke.spec.ts:85:1 › million-point run: the spike at step 500,123 (loss 42.5) is in range, zooms and hovers exactly (4.4s)
+  ok 87 [mobile-chromium] › e2e\production-smoke.spec.ts:118:1 › NaN and ±Infinity are shown as labelled warnings, not plotted values (3.9s)
+  ok 89 [mobile-chromium] › e2e\reliability.spec.ts:54:5 › de-DE browser in Pacific/Kiritimati › dates stay on their UTC day and are labelled UTC; numbers use the fixed en-US format (3.3s)
+  -  93 [mobile-chromium] › e2e\reliability.spec.ts:98:1 › regression: hovering inside a gap names the cursor step, then the nearest observation
+  ok 92 [mobile-chromium] › e2e\reliability.spec.ts:86:1 › regression: the range form rejects "5.000" and trims ranges to the data (1.9s)
+  ok 90 [mobile-chromium] › e2e\reliability.spec.ts:54:5 › ru-RU browser in Pacific/Pago_Pago › dates stay on their UTC day and are labelled UTC; numbers use the fixed en-US format (3.0s)
+  ok 91 [mobile-chromium] › e2e\reliability.spec.ts:71:1 › regression: y-axis tick labels stay distinct when values barely change (2.8s)
+  ok 94 [mobile-chromium] › e2e\reliability.spec.ts:115:1 › zooming away from NaNs and resetting brings their markers back; a diverging run stays divergent (2.7s)
+
+  8 skipped
+  86 passed (1.8m)
+exit=0

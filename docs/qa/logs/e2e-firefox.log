@@ -1,0 +1,64 @@
+$ PW_BROWSER=firefox npm run test:e2e
+
+> training-run-monitor@0.1.0 test:e2e
+> playwright test
+
+[WebServer] 
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 47 tests using 2 workers
+
+  ok  1 [firefox] › e2e\charts.spec.ts:106:1 › a viewport beside the spike does not draw or scale for it (9.0s)
+  ok  2 [firefox] › e2e\charts.spec.ts:79:1 › the 1M-point spike is drawn at its exact position, full range and zoomed (10.1s)
+  ok  3 [firefox] › e2e\charts.spec.ts:117:1 › drag zoom and keyboard zoom move all three charts together (4.4s)
+  ok  4 [firefox] › e2e\charts.spec.ts:143:1 › gaps break the line and are labelled; hovering a gap explains it (4.0s)
+  ok  6 [firefox] › e2e\charts.spec.ts:169:1 › conflicting duplicates are flagged on the chart (3.7s)
+  ok  5 [firefox] › e2e\charts.spec.ts:155:1 › NaN, +Infinity and -Infinity are labelled markers, never plotted values (6.2s)
+  ok  7 [firefox] › e2e\charts.spec.ts:174:1 › charts fit the viewport without horizontal overflow (4.5s)
+  ok  8 [firefox] › e2e\dashboard.spec.ts:10:1 › lists all 20 runs without horizontal page overflow (5.3s)
+  ok  9 [firefox] › e2e\dashboard.spec.ts:17:1 › filters and sorts with the keyboard only (4.1s)
+  ok 10 [firefox] › e2e\dashboard.spec.ts:39:1 › empty results offer a way back (3.4s)
+  ok 11 [firefox] › e2e\dashboard.spec.ts:46:1 › back link restores the filtered list (3.9s)
+  ok 12 [firefox] › e2e\dashboard.spec.ts:55:1 › run-12 shows its NaN ending as NaN with a warning (3.0s)
+  ok 13 [firefox] › e2e\dashboard.spec.ts:64:1 › run-15 conflicting duplicates can be expanded with the keyboard (3.7s)
+  ok 14 [firefox] › e2e\dashboard.spec.ts:77:1 › the million-point run loads and shows the exact spike maximum (4.9s)
+  ok 15 [firefox] › e2e\final-qa.spec.ts:27:5 › axe WCAG 2.x A/AA, light theme › runs list (default, filtered, empty) has no violations (20.3s)
+  ok 17 [firefox] › e2e\final-qa.spec.ts:79:5 › axe WCAG 2.x A/AA, light theme › unknown run and unknown route pages have no violations (8.5s)
+  ok 18 [firefox] › e2e\final-qa.spec.ts:27:5 › axe WCAG 2.x A/AA, dark theme › runs list (default, filtered, empty) has no violations (15.5s)
+  ok 16 [firefox] › e2e\final-qa.spec.ts:35:5 › axe WCAG 2.x A/AA, light theme › run pages with anomalies, open details and a form error have no violations (1.2m)
+  ok 20 [firefox] › e2e\final-qa.spec.ts:79:5 › axe WCAG 2.x A/AA, dark theme › unknown run and unknown route pages have no violations (5.5s)
+  ok 21 [firefox] › e2e\final-qa.spec.ts:89:1 › every keyboard focus stop shows a visible focus outline (5.9s)
+  ok 19 [firefox] › e2e\final-qa.spec.ts:35:5 › axe WCAG 2.x A/AA, dark theme › run pages with anomalies, open details and a form error have no violations (45.8s)
+  ok 22 [firefox] › e2e\final-qa.spec.ts:118:1 › reflow: no horizontal page scrolling at 320 px and at 200% zoom (640 px) (11.6s)
+  ok 23 [firefox] › e2e\final-qa.spec.ts:135:1 › URL filters survive a reload and the browser Back button (3.4s)
+  ok 24 [firefox] › e2e\final-qa.spec.ts:155:1 › a failing Web Worker shows a visible error, and Retry recovers (3.4s)
+  ok 25 [firefox] › e2e\final-qa.spec.ts:169:1 › if the chart code cannot be downloaded, the page says so and keeps the summaries (3.2s)
+  ok 26 [firefox] › e2e\final-qa.spec.ts:177:1 › regression: fast typing in the search box keeps every character, even on a slow CPU (3.2s)
+  ok 27 [firefox] › e2e\navigation.spec.ts:3:1 › runs list page loads (2.7s)
+  ok 28 [firefox] › e2e\navigation.spec.ts:9:1 › run details route loads directly (2.8s)
+  ok 29 [firefox] › e2e\navigation.spec.ts:15:1 › navigates between list and details (3.3s)
+  ok 30 [firefox] › e2e\navigation.spec.ts:26:1 › skip link is the first focusable element and targets main (2.9s)
+  ok 31 [firefox] › e2e\performance-architecture.spec.ts:37:1 › the runs list does not download the chart code; a run page loads it on demand (3.5s)
+  ok 32 [firefox] › e2e\performance-architecture.spec.ts:48:1 › a deep link to a run loads data in a Web Worker that is closed when done (3.2s)
+  ok 33 [firefox] › e2e\performance-architecture.spec.ts:57:1 › rapid navigation closes superseded workers and shows only the last run (3.3s)
+  ok 34 [firefox] › e2e\performance-architecture.spec.ts:72:1 › the million-point run still draws the exact spike after the worker hand-off (3.8s)
+  ok 36 [firefox] › e2e\production-smoke.spec.ts:60:1 › static assets are served as JavaScript files (2.8s)
+  ok 35 [firefox] › e2e\production-smoke.spec.ts:37:1 › direct navigation and browser refresh work on every kind of URL (5.1s)
+  -  37 [firefox] › e2e\production-smoke.spec.ts:69:1 › deployment: a missing asset is a real 404, not the app page
+  ok 38 [firefox] › e2e\production-smoke.spec.ts:78:1 › the runs list shows all 20 runs (2.9s)
+  ok 39 [firefox] › e2e\production-smoke.spec.ts:85:1 › million-point run: the spike at step 500,123 (loss 42.5) is in range, zooms and hovers exactly (4.8s)
+  ok 40 [firefox] › e2e\production-smoke.spec.ts:118:1 › NaN and ±Infinity are shown as labelled warnings, not plotted values (6.4s)
+  ok 41 [firefox] › e2e\reliability.spec.ts:28:1 › rapid run switching (three navigations in one tick) shows only the last run (3.9s)
+  ok 42 [firefox] › e2e\reliability.spec.ts:54:5 › de-DE browser in Pacific/Kiritimati › dates stay on their UTC day and are labelled UTC; numbers use the fixed en-US format (4.3s)
+  ok 43 [firefox] › e2e\reliability.spec.ts:54:5 › ru-RU browser in Pacific/Pago_Pago › dates stay on their UTC day and are labelled UTC; numbers use the fixed en-US format (4.3s)
+  ok 44 [firefox] › e2e\reliability.spec.ts:71:1 › regression: y-axis tick labels stay distinct when values barely change (4.3s)
+  ok 45 [firefox] › e2e\reliability.spec.ts:86:1 › regression: the range form rejects "5.000" and trims ranges to the data (4.0s)
+  ok 46 [firefox] › e2e\reliability.spec.ts:98:1 › regression: hovering inside a gap names the cursor step, then the nearest observation (4.0s)
+  ok 47 [firefox] › e2e\reliability.spec.ts:115:1 › zooming away from NaNs and resetting brings their markers back; a diverging run stays divergent (5.0s)
+
+  1 skipped
+  46 passed (3.5m)
+exit=0

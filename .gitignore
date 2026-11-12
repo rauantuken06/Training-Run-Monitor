@@ -8,6 +8,8 @@ blob-report
 playwright/.cache
 .vite
 *.log
+# Test-run logs kept as QA evidence (linked from docs/final-qa-report.md)
+!docs/qa/logs/*.log
 .DS_Store
 
 # Local environment files (keep an optional committed template)

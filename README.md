@@ -2,7 +2,7 @@
 
 A web application for monitoring machine learning training runs. It shows loss, learning rate (`lr`) and gradient norm (`grad_norm`) across runs, and it surfaces data quality problems instead of hiding them.
 
-The finished application will:
+The application can:
 
 - display 20 synthetic training runs
 - chart loss, `lr` and `grad_norm`
@@ -493,6 +493,38 @@ Full matrix, evidence and remaining risks: [docs/final-qa-report.md](docs/final-
   - Safari and real mobile devices are untested.
 - **Memory (Chrome 157, run-20 open):** the tab's renderer uses about 125 MB private memory (peak while loading: about 225 MB); the JS heap is 74.9 MB. Measure with `npm run build && node scripts/perf/tab-memory.mjs` (Windows only).
 
+## Deployment (Task 10)
+
+The app is a static single-page application, so any static host works. The repository is set up for **Vercel** through [vercel.json](vercel.json):
+
+- **Settings:** framework `vite`, build command `npm run build`, output folder `dist`.
+- **One rewrite:** every path except `/assets/…` is served `/index.html`, so React Router handles `/`, `/runs/:runId` and unknown URLs. These keep working after a browser refresh or when opened directly.
+  - Vercel serves an existing file before it applies a rewrite, so real files are never replaced.
+  - `/assets/` is excluded so that a missing chunk returns a genuine 404, not HTML served as JavaScript.
+  - Unknown app URLs return HTTP 200 with the app's own "Page not found" page, which is normal for a client-side app.
+- **No API, no server code, no environment variables.**
+
+**Deploy (Vercel dashboard):** *Add New → Project*, import the GitHub repository, keep the detected settings, then *Deploy*.
+
+**Deploy (CLI):** `npx vercel` for a preview deployment, `npx vercel --prod` for production. This needs a Vercel login.
+
+Final test results, logs and skip reasons: [docs/test-evidence.md](docs/test-evidence.md). Two-page report: [docs/final-report.md](docs/final-report.md) ([PDF](docs/final-report.pdf)).
+
+**Verify a deployment** with the production smoke test. It needs no local server:
+
+```bash
+PW_BASE_URL=https://<your-deployment>.vercel.app PW_CHANNEL=chrome npx playwright test e2e/production-smoke.spec.ts
+```
+
+The smoke test checks:
+- direct navigation and reload of `/`, a filtered list, `/runs/run-01`, `/runs/run-20`, an unknown run and an unknown route
+- that assets are served as JavaScript and a missing asset returns 404
+- the spike in the million-point run (zoom and exact hover at step 500,123, loss 42.5)
+- the NaN and ±Infinity markers
+- mobile layout (Pixel 7 project) and console errors
+
+**Local check of the routing rules (no Vercel account needed):** the production build was served by a small local server. It follows Vercel's documented routing order (file first, then the first matching rewrite) and compiles `vercel.json` with `path-to-regexp` 6. The smoke test passed there in Chrome, Edge and Firefox. This is an emulation: real Vercel behaviour is only confirmed by running the smoke test against the deployed URL.
+
 ## Current implementation status
 
 **Task 01 (project foundation): complete.**
@@ -540,7 +572,9 @@ Full matrix, evidence and remaining risks: [docs/final-qa-report.md](docs/final-
 
 **Task 09 (final QA): complete.** See [docs/final-qa-report.md](docs/final-qa-report.md).
 
-Not implemented yet (later tasks): deployment.
+**Task 10 (deployment and submission): configuration ready; not deployed yet.** See [Deployment](#deployment-task-10) and [docs/final-report.md](docs/final-report.md).
+
+Deployment: configured (`vercel.json`), awaiting a verified public URL.
 
 ### Known notes
 
@@ -548,7 +582,7 @@ Not implemented yet (later tasks): deployment.
 
 - Unit tests use **happy-dom** instead of jsdom. With jsdom, React Router's data-router navigation threw `RequestInit: Expected signal to be an instance of AbortSignal`, because jsdom's `AbortSignal` is a different class from the one Node's `Request` (undici) expects. happy-dom ships matching implementations of both.
 - The skip-link e2e test is skipped on the mobile project on purpose, because it exercises hardware-keyboard Tab navigation.
-- Production SPA hosting must rewrite unknown paths to `index.html` so `/runs/:runId` deep links work. This is handled by `vite preview` locally; it will be configured during the deployment task.
+- Production SPA hosting must rewrite unknown paths to `index.html` so `/runs/:runId` deep links work. This is handled by `vite preview` locally and by the rewrite in `vercel.json` on Vercel.
 
 ## Dependency security (`npm audit`, 2026-11-11)
 

@@ -1,0 +1,6 @@
+$ npm run typecheck
+
+> training-run-monitor@0.1.0 typecheck
+> tsc -b
+
+exit=0

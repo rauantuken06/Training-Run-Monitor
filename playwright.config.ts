@@ -1,7 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 4173;
-const BASE_URL = `http://localhost:${PORT}`;
+/**
+ * PW_BASE_URL=https://… runs the specs against an already running deployment
+ * (e.g. the Vercel URL) instead of building and serving the app locally.
+ */
+const EXTERNAL_BASE_URL = process.env.PW_BASE_URL;
+const BASE_URL = EXTERNAL_BASE_URL ?? `http://localhost:${PORT}`;
 
 /**
  * Optional: use an installed browser instead of Playwright's bundled build,
@@ -31,11 +36,15 @@ export default defineConfig({
           { name: 'chromium', use: { ...devices['Desktop Chrome'], ...(channel ? { channel } : {}) } },
           { name: 'mobile-chromium', use: { ...devices['Pixel 7'], ...(channel ? { channel } : {}) } },
         ],
-  webServer: {
-    // Runs against the production build so e2e covers what gets deployed.
-    command: `npm run build && npx vite preview --port ${PORT} --strictPort`,
-    url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  ...(EXTERNAL_BASE_URL
+    ? {}
+    : {
+        webServer: {
+          // Runs against the production build so e2e covers what gets deployed.
+          command: `npm run build && npx vite preview --port ${PORT} --strictPort`,
+          url: BASE_URL,
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+        },
+      }),
 });
